@@ -90,3 +90,4 @@ library lib
                     , Runtime.RTState
                     , Runtime.RTVal
                     , Runtime.RTEval
+                    , Preprocessor.Desugar
