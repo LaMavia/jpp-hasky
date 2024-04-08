@@ -1,0 +1,150 @@
+-- tokens --------------------------------
+
+token LIdent ( lower (letter | digit | '_')* ) ;
+
+token UIdent ( upper (letter | digit | '_')* ) ;
+
+
+
+-- program -------------------------------
+
+entrypoints Program ;
+
+Program. Program ::= [TopDef] ;
+
+terminator nonempty TopDef ";;" ;
+
+
+
+-- topdef ---------------------------------
+
+TDDataV.         TopDef ::= "type" UIdent "(" [LIdent] ")" "=" [Constructor];
+
+TDDataNV.        TopDef ::= "type" UIdent "=" [Constructor] ;
+
+TDDeclaration.   TopDef ::= LIdent "::" Type "=" Expr ;
+
+TDDeclarationNT. TopDef ::= LIdent "=" Expr ;
+
+separator nonempty Constructor "|" ;
+separator nonempty LIdent "," ;
+
+
+
+-- types ----------------------------------
+
+TVar. Type ::= LIdent ;
+
+TApp. Type ::= UIdent "(" [Type] ")" ;
+
+TType. Type ::= UIdent ;
+
+TBound. Type ::= "(" [LIdent] ")" "=>" Type ;
+
+separator nonempty Type ",";
+
+
+
+-- constructors ---------------------------
+
+Constructor. Constructor ::= UIdent "(" [Type] ")" ;
+NullaryConstr. Constructor ::= UIdent ;
+
+
+
+-- arg ------------------------------------
+
+Arg. Arg ::= LIdent Type ;
+
+
+
+-- expressions ----------------------------
+
+ELet.      Expr ::= "let" Expr "::" Type "=" Expr "in" Expr ;
+
+ELetNT.    Expr ::= "let" Expr "=" Expr "in" Expr ;
+
+EMatch.    Expr ::= "match" Expr "with" "(" [MatchBranch] ")" ;
+
+EIf.       Expr ::= "if" Expr "then" Expr "else" Expr ;
+
+ELambda.   Expr ::= "fun" "(" [Arg] ")" "->" Expr ;
+
+EList.     Expr ::= "[" [Expr] "]" ;
+
+EId.       Expr6 ::= LIdent ;
+
+EConstr.   Expr6 ::= UIdent ;
+
+EIgnore.   Expr6 ::= "_" ;
+
+EApp.      Expr6 ::= Expr6 "(" [Expr] ")" ;
+
+ELit.      Expr6 ::= Literal ;
+
+Neg.       Expr5 ::= "-" Expr6 ;
+
+Not.       Expr5 ::= "!" Expr6 ;
+
+EMul.      Expr4 ::= Expr4 MulOp Expr5 ;
+
+EAdd.      Expr3 ::= Expr3 AddOp Expr4 ;
+
+ERel.      Expr2 ::= Expr2 RelOp Expr3 ;
+
+EAnd.      Expr1 ::= Expr2 "&&" Expr1 ;
+
+EOr.       Expr  ::= Expr1 "||" Expr ;
+
+coercions Expr 6 ;
+separator Expr "," ;
+separator nonempty Arg "," ;
+separator MatchBranch "";
+
+
+
+-- matching -------------------------------
+
+MBBranch. MatchBranch ::= "|" Expr "->" Expr ;
+
+
+
+-- literals -------------------------------
+
+LInt. Literal ::= Integer ;
+
+
+
+-- operators -----------------------------------------------
+
+Plus.      AddOp ::= "+" ;
+
+Minus.     AddOp ::= "-" ;
+
+Times.     MulOp ::= "*" ;
+
+Div.       MulOp ::= "/" ;
+
+Mod.       MulOp ::= "%" ;
+
+LTH.       RelOp ::= "<" ;
+
+LE.        RelOp ::= "<=" ;
+
+GTH.       RelOp ::= ">" ;
+
+GE.        RelOp ::= ">=" ;
+
+EQU.       RelOp ::= "==" ;
+
+NE.        RelOp ::= "!=" ;
+
+
+
+-- comments -------------------------------
+
+comment "#" ;
+comment "(*" "*)" ;
+
+
+
