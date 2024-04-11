@@ -1,25 +1,19 @@
 module Main where
 
-import Prelude
-  ( ($), (.)
-  , Either(..)
-  , Int, (>)
-  , String, (++), concat, unlines
-  , Show, show
-  , IO, (>>), (>>=), mapM_, putStrLn
-  , FilePath
-  , getContents, readFile
-  )
-import System.Environment ( getArgs )
-import System.Exit        ( exitFailure )
-import Control.Monad      ( when )
+import           Control.Monad        (when)
+import           Prelude              (Either (..), FilePath, IO, Int, Show,
+                                       String, concat, getContents, mapM_,
+                                       putStrLn, readFile, show, unlines, ($),
+                                       (++), (.), (>), (>>), (>>=))
+import           System.Environment   (getArgs)
+import           System.Exit          (exitFailure)
 
-import Abs   ( Program )
-import Lex   ( Token, mkPosToken )
-import Par   ( pProgram, myLexer )
-import Print ( printTree )
-import Skel  ()
-import Preprocessor.Desugar (desugarProgram)
+import           Abs                  (Program)
+import           Lex                  (Token, mkPosToken)
+import           Par                  (myLexer, pProgram)
+import           Preprocessor.Desugar (desugarProgram)
+import           Print                (printTree)
+import           Skel                 ()
 
 type Err        = Either String
 type ParseFun   = [Token] -> Err Program
@@ -56,7 +50,7 @@ main :: IO ()
 main = do
   args <- getArgs
   case args of
-    []         -> getContents >>= run 2 pProgram
-    "-s":fs    -> mapM_ (runFile 0 pProgram) fs
-    fs         -> mapM_ (runFile 2 pProgram) fs
+    []      -> getContents >>= run 2 pProgram
+    "-s":fs -> mapM_ (runFile 0 pProgram) fs
+    fs      -> mapM_ (runFile 2 pProgram) fs
 

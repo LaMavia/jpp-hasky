@@ -1,12 +1,12 @@
-{-# LANGUAGE QuasiQuotes    #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Runtime.RTVal where
 
-import Runtime.RTError 
+import           Data.List               (intercalate)
 import           Data.String.Interpolate (i)
-import Data.List (intercalate)
+import           Runtime.RTError
 
-data RTVal 
+data RTVal
   = RTInt Int
   | RTConstr String [RTVal]
   | RTFunc ([RTVal] -> RTResult RTVal)
