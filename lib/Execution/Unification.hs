@@ -1,10 +1,9 @@
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE PatternGuards #-}
 
 module Execution.Unification where
 
 import           Abs
-import           Data.Function           (on)
-import           Data.List               (length)
 import qualified Data.Map.Strict         as Map
 import           Data.String.Interpolate (i)
 import           Runtime.RTError         (RTResult, placeOfExpr, rtError)
