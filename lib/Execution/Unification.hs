@@ -19,13 +19,16 @@ singleton = Map.singleton
 
 unify :: Expr -> RTVal -> RTResult Unifier
 unify (EIgnore _) _ = return empty
+
 unify (EId _ (LIdent x)) v = return $ singleton x v
+
 unify (EApp _ (EConstr _ (UIdent x)) args) (RTConstr y vs)
   | length args == length vs
   , x == y
   = fmap (foldr1 (<>))
     $ mapM (uncurry unify)
     $ zip args vs
+
 unify (ELit _ (LInt _ p)) (RTInt n)
   | fromInteger p == n = return empty
 
