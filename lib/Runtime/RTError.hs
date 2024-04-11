@@ -10,6 +10,8 @@ import           Data.String.Interpolate (i)
 
 type CallstackEntry = (BNFC'Position, String)
 
+type RTResult = Either RTError
+
 data RTError =
   RTError
   { callstack :: [CallstackEntry]
@@ -26,6 +28,8 @@ instance Show RTError where
             ]
     where callstackWithPos = first (maybe ("?", "?") (bimap show show)) <$> callstack
 
+rtError :: CallstackEntry -> String -> RTError
+rtError e m = RTError { callstack = [e], message = m }
 
 placeOfLIdent :: Abs.LIdent -> String
 placeOfLIdent x = case x of

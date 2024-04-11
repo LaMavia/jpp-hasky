@@ -91,3 +91,4 @@ library lib
                     , Runtime.RTVal
                     , Runtime.RTEval
                     , Preprocessor.Desugar
+                    , Execution.Unification
