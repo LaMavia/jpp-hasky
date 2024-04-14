@@ -1,6 +1,8 @@
 module Runtime.RTEval where
 
-import           Abs
-import           Runtime.RTError
-import           Runtime.RTState
-import           Runtime.RTVal
+import Runtime.RTState
+import Runtime.RTError
+import Runtime.RTVal
+
+type RTEval a b = a -> RTState -> RTResult b
+

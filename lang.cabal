@@ -56,8 +56,8 @@ common warnings
 executable hasky
     import:           warnings
     main-is:          Hasky.hs
-    build-depends:    base ^>=4.19.0.0
-                    , array ^>= 0.5.6.0  
+    build-depends:    base ^>=4.17.2.1
+                    , array ^>= 0.5.4.0  
                     , lib
     hs-source-dirs:   app
     default-language: Haskell2010
@@ -65,8 +65,8 @@ executable hasky
 executable test
     import:           warnings
     main-is:          Test.hs
-    build-depends:    base ^>=4.19.0.0
-                    , array ^>= 0.5.6.0  
+    build-depends:    base ^>=4.17.2.1
+                    , array ^>= 0.5.4.0  
                     , lib
     hs-source-dirs:   test
     default-language: Haskell2010
@@ -74,11 +74,11 @@ executable test
 library lib
     import: warnings
 
-    build-depends:    base ^>=4.19.0.0
-                    , array ^>= 0.5.6.0  
+    build-depends:    base ^>=4.17.2.1
+                    , array ^>= 0.5.4.0  
                     , containers ^>= 0.7
                     , string-interpolate ^>= 0.3.3.0
-
+                    , transformers ^>= 0.6.1.1
     hs-source-dirs:   lib
     exposed-modules:  Abs
                     , ErrM
@@ -86,9 +86,15 @@ library lib
                     , Skel
                     , Lex
                     , Par
-                    , Runtime.RTError
+                    , Runtime
+                    , Preprocessor.Desugar
+                    , Execution.Eval
+
+   other-modules:     Runtime.RTError
                     , Runtime.RTState
                     , Runtime.RTVal
                     , Runtime.RTEval
-                    , Preprocessor.Desugar
                     , Execution.Unification
+                    , Execution.Eval.Program
+                    , Execution.Eval.TopDef
+
