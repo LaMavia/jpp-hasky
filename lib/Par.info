@@ -39,7 +39,7 @@ Grammar
 	Expr -> Expr1 '||' Expr                            (30)
 	Expr -> Expr1                                      (31)
 	Expr6 -> LIdent                                    (32)
-	Expr6 -> UIdent                                    (33)
+	Expr6 -> UIdent '.' UIdent                         (33)
 	Expr6 -> '_'                                       (34)
 	Expr6 -> Expr6 '(' ListExpr ')'                    (35)
 	Expr6 -> Literal                                   (36)
@@ -90,30 +90,31 @@ Terminals
 	','            { PT _ (TS _ 9) }
 	'-'            { PT _ (TS _ 10) }
 	'->'           { PT _ (TS _ 11) }
-	'/'            { PT _ (TS _ 12) }
-	'::'           { PT _ (TS _ 13) }
-	';;'           { PT _ (TS _ 14) }
-	'<'            { PT _ (TS _ 15) }
-	'<='           { PT _ (TS _ 16) }
-	'='            { PT _ (TS _ 17) }
-	'=='           { PT _ (TS _ 18) }
-	'=>'           { PT _ (TS _ 19) }
-	'>'            { PT _ (TS _ 20) }
-	'>='           { PT _ (TS _ 21) }
-	'['            { PT _ (TS _ 22) }
-	']'            { PT _ (TS _ 23) }
-	'_'            { PT _ (TS _ 24) }
-	'else'         { PT _ (TS _ 25) }
-	'fun'          { PT _ (TS _ 26) }
-	'if'           { PT _ (TS _ 27) }
-	'in'           { PT _ (TS _ 28) }
-	'let'          { PT _ (TS _ 29) }
-	'match'        { PT _ (TS _ 30) }
-	'then'         { PT _ (TS _ 31) }
-	'type'         { PT _ (TS _ 32) }
-	'with'         { PT _ (TS _ 33) }
-	'|'            { PT _ (TS _ 34) }
-	'||'           { PT _ (TS _ 35) }
+	'.'            { PT _ (TS _ 12) }
+	'/'            { PT _ (TS _ 13) }
+	'::'           { PT _ (TS _ 14) }
+	';;'           { PT _ (TS _ 15) }
+	'<'            { PT _ (TS _ 16) }
+	'<='           { PT _ (TS _ 17) }
+	'='            { PT _ (TS _ 18) }
+	'=='           { PT _ (TS _ 19) }
+	'=>'           { PT _ (TS _ 20) }
+	'>'            { PT _ (TS _ 21) }
+	'>='           { PT _ (TS _ 22) }
+	'['            { PT _ (TS _ 23) }
+	']'            { PT _ (TS _ 24) }
+	'_'            { PT _ (TS _ 25) }
+	'else'         { PT _ (TS _ 26) }
+	'fun'          { PT _ (TS _ 27) }
+	'if'           { PT _ (TS _ 28) }
+	'in'           { PT _ (TS _ 29) }
+	'let'          { PT _ (TS _ 30) }
+	'match'        { PT _ (TS _ 31) }
+	'then'         { PT _ (TS _ 32) }
+	'type'         { PT _ (TS _ 33) }
+	'with'         { PT _ (TS _ 34) }
+	'|'            { PT _ (TS _ 35) }
+	'||'           { PT _ (TS _ 36) }
 	L_integ        { PT _ (TI _) }
 	L_LIdent       { PT _ (T_LIdent _) }
 	L_UIdent       { PT _ (T_UIdent _) }
@@ -301,6 +302,7 @@ State 10
 	','            reduce using rule 3
 	'-'            reduce using rule 3
 	'->'           reduce using rule 3
+	'.'            reduce using rule 3
 	'/'            reduce using rule 3
 	'::'           reduce using rule 3
 	';;'           reduce using rule 3
@@ -439,34 +441,9 @@ State 15
 
 State 16
 
-	Expr6 -> UIdent .                                   (rule 33)
+	Expr6 -> UIdent . '.' UIdent                        (rule 33)
 
-	'!='           reduce using rule 33
-	'%'            reduce using rule 33
-	'&&'           reduce using rule 33
-	'('            reduce using rule 33
-	')'            reduce using rule 33
-	'*'            reduce using rule 33
-	'+'            reduce using rule 33
-	','            reduce using rule 33
-	'-'            reduce using rule 33
-	'->'           reduce using rule 33
-	'/'            reduce using rule 33
-	'::'           reduce using rule 33
-	';;'           reduce using rule 33
-	'<'            reduce using rule 33
-	'<='           reduce using rule 33
-	'='            reduce using rule 33
-	'=='           reduce using rule 33
-	'>'            reduce using rule 33
-	'>='           reduce using rule 33
-	']'            reduce using rule 33
-	'else'         reduce using rule 33
-	'in'           reduce using rule 33
-	'then'         reduce using rule 33
-	'with'         reduce using rule 33
-	'|'            reduce using rule 33
-	'||'           reduce using rule 33
+	'.'            shift, and enter state 75
 
 
 State 17
@@ -970,7 +947,7 @@ State 41
 	Constructor -> UIdent . '(' ListType ')'            (rule 21)
 	Constructor -> UIdent .                             (rule 22)
 
-	'('            shift, and enter state 98
+	'('            shift, and enter state 100
 	';;'           reduce using rule 22
 	'|'            reduce using rule 22
 
@@ -988,7 +965,7 @@ State 43
 	ListConstructor -> Constructor . '|' ListConstructor    (rule 12)
 
 	';;'           reduce using rule 11
-	'|'            shift, and enter state 97
+	'|'            shift, and enter state 99
 
 
 State 44
@@ -997,21 +974,21 @@ State 44
 	ListLIdent -> LIdent . ',' ListLIdent               (rule 14)
 
 	')'            reduce using rule 13
-	','            shift, and enter state 96
+	','            shift, and enter state 98
 
 
 State 45
 
 	TopDef -> 'type' UIdent '(' ListLIdent . ')' '=' ListConstructor    (rule 7)
 
-	')'            shift, and enter state 95
+	')'            shift, and enter state 97
 
 
 State 46
 
 	Type -> '(' ListLIdent . ')' '=>' Type              (rule 18)
 
-	')'            shift, and enter state 94
+	')'            shift, and enter state 96
 
 
 State 47
@@ -1034,7 +1011,7 @@ State 47
 	Integer        goto state 14
 	LIdent         goto state 15
 	UIdent         goto state 16
-	Expr           goto state 93
+	Expr           goto state 95
 	Expr6          goto state 18
 	Expr5          goto state 19
 	Expr4          goto state 20
@@ -1053,14 +1030,14 @@ State 48
 
 	LIdent         goto state 34
 	UIdent         goto state 35
-	Type           goto state 91
-	ListType       goto state 92
+	Type           goto state 93
+	ListType       goto state 94
 
 State 49
 
 	Expr -> 'match' Expr . 'with' '(' ListMatchBranch ')'    (rule 26)
 
-	'with'         shift, and enter state 90
+	'with'         shift, and enter state 92
 
 
 State 50
@@ -1068,15 +1045,15 @@ State 50
 	Expr -> 'let' Expr . '::' Type '=' Expr 'in' Expr    (rule 24)
 	Expr -> 'let' Expr . '=' Expr 'in' Expr             (rule 25)
 
-	'::'           shift, and enter state 88
-	'='            shift, and enter state 89
+	'::'           shift, and enter state 90
+	'='            shift, and enter state 91
 
 
 State 51
 
 	Expr -> 'if' Expr . 'then' Expr 'else' Expr         (rule 27)
 
-	'then'         shift, and enter state 87
+	'then'         shift, and enter state 89
 
 
 State 52
@@ -1085,9 +1062,9 @@ State 52
 
 	L_LIdent       shift, and enter state 8
 
-	LIdent         goto state 84
-	Arg            goto state 85
-	ListArg        goto state 86
+	LIdent         goto state 86
+	Arg            goto state 87
+	ListArg        goto state 88
 
 State 53
 
@@ -1095,7 +1072,7 @@ State 53
 	ListExpr -> Expr . ',' ListExpr                     (rule 51)
 
 	')'            reduce using rule 50
-	','            shift, and enter state 83
+	','            shift, and enter state 85
 	']'            reduce using rule 50
 
 
@@ -1103,7 +1080,7 @@ State 54
 
 	Expr -> '[' ListExpr . ']'                          (rule 29)
 
-	']'            shift, and enter state 82
+	']'            shift, and enter state 84
 
 
 State 55
@@ -1143,7 +1120,7 @@ State 56
 
 	Expr6 -> '(' Expr . ')'                             (rule 37)
 
-	')'            shift, and enter state 81
+	')'            shift, and enter state 83
 
 
 State 57
@@ -1199,7 +1176,7 @@ State 58
 	Integer        goto state 14
 	LIdent         goto state 15
 	UIdent         goto state 16
-	Expr           goto state 80
+	Expr           goto state 82
 	Expr6          goto state 18
 	Expr5          goto state 19
 	Expr4          goto state 20
@@ -1226,7 +1203,7 @@ State 59
 	Expr6          goto state 18
 	Expr5          goto state 19
 	Expr4          goto state 20
-	Expr3          goto state 79
+	Expr3          goto state 81
 	Literal        goto state 24
 
 State 60
@@ -1262,7 +1239,7 @@ State 61
 	Expr4          goto state 20
 	Expr3          goto state 21
 	Expr2          goto state 22
-	Expr1          goto state 78
+	Expr1          goto state 80
 	Literal        goto state 24
 
 State 62
@@ -1347,7 +1324,7 @@ State 67
 	UIdent         goto state 16
 	Expr6          goto state 18
 	Expr5          goto state 19
-	Expr4          goto state 77
+	Expr4          goto state 79
 	Literal        goto state 24
 
 State 68
@@ -1392,7 +1369,7 @@ State 70
 	LIdent         goto state 15
 	UIdent         goto state 16
 	Expr6          goto state 18
-	Expr5          goto state 76
+	Expr5          goto state 78
 	Literal        goto state 24
 
 State 71
@@ -1462,17 +1439,57 @@ State 74
 	Expr3          goto state 21
 	Expr2          goto state 22
 	Expr1          goto state 23
-	ListExpr       goto state 75
+	ListExpr       goto state 77
 	Literal        goto state 24
 
 State 75
 
-	Expr6 -> Expr6 '(' ListExpr . ')'                   (rule 35)
+	Expr6 -> UIdent '.' . UIdent                        (rule 33)
 
-	')'            shift, and enter state 114
+	L_UIdent       shift, and enter state 10
 
+	UIdent         goto state 76
 
 State 76
+
+	Expr6 -> UIdent '.' UIdent .                        (rule 33)
+
+	'!='           reduce using rule 33
+	'%'            reduce using rule 33
+	'&&'           reduce using rule 33
+	'('            reduce using rule 33
+	')'            reduce using rule 33
+	'*'            reduce using rule 33
+	'+'            reduce using rule 33
+	','            reduce using rule 33
+	'-'            reduce using rule 33
+	'->'           reduce using rule 33
+	'/'            reduce using rule 33
+	'::'           reduce using rule 33
+	';;'           reduce using rule 33
+	'<'            reduce using rule 33
+	'<='           reduce using rule 33
+	'='            reduce using rule 33
+	'=='           reduce using rule 33
+	'>'            reduce using rule 33
+	'>='           reduce using rule 33
+	']'            reduce using rule 33
+	'else'         reduce using rule 33
+	'in'           reduce using rule 33
+	'then'         reduce using rule 33
+	'with'         reduce using rule 33
+	'|'            reduce using rule 33
+	'||'           reduce using rule 33
+
+
+State 77
+
+	Expr6 -> Expr6 '(' ListExpr . ')'                   (rule 35)
+
+	')'            shift, and enter state 116
+
+
+State 78
 
 	Expr4 -> Expr4 MulOp Expr5 .                        (rule 41)
 
@@ -1503,7 +1520,7 @@ State 76
 	'||'           reduce using rule 41
 
 
-State 77
+State 79
 
 	Expr4 -> Expr4 . MulOp Expr5                        (rule 41)
 	Expr3 -> Expr3 AddOp Expr4 .                        (rule 43)
@@ -1536,7 +1553,7 @@ State 77
 
 	MulOp          goto state 70
 
-State 78
+State 80
 
 	Expr1 -> Expr2 '&&' Expr1 .                         (rule 47)
 
@@ -1555,7 +1572,7 @@ State 78
 	'||'           reduce using rule 47
 
 
-State 79
+State 81
 
 	Expr3 -> Expr3 . AddOp Expr4                        (rule 43)
 	Expr2 -> Expr2 RelOp Expr3 .                        (rule 45)
@@ -1585,7 +1602,7 @@ State 79
 
 	AddOp          goto state 67
 
-State 80
+State 82
 
 	Expr -> Expr1 '||' Expr .                           (rule 30)
 
@@ -1603,7 +1620,7 @@ State 80
 	'|'            reduce using rule 30
 
 
-State 81
+State 83
 
 	Expr6 -> '(' Expr ')' .                             (rule 37)
 
@@ -1635,7 +1652,7 @@ State 81
 	'||'           reduce using rule 37
 
 
-State 82
+State 84
 
 	Expr -> '[' ListExpr ']' .                          (rule 29)
 
@@ -1653,7 +1670,7 @@ State 82
 	'|'            reduce using rule 29
 
 
-State 83
+State 85
 
 	ListExpr -> Expr ',' . ListExpr                     (rule 51)
 
@@ -1682,10 +1699,10 @@ State 83
 	Expr3          goto state 21
 	Expr2          goto state 22
 	Expr1          goto state 23
-	ListExpr       goto state 113
+	ListExpr       goto state 115
 	Literal        goto state 24
 
-State 84
+State 86
 
 	Arg -> LIdent . Type                                (rule 23)
 
@@ -1695,27 +1712,68 @@ State 84
 
 	LIdent         goto state 34
 	UIdent         goto state 35
-	Type           goto state 112
+	Type           goto state 114
 
-State 85
+State 87
 
 	ListArg -> Arg .                                    (rule 52)
 	ListArg -> Arg . ',' ListArg                        (rule 53)
 
 	')'            reduce using rule 52
-	','            shift, and enter state 111
+	','            shift, and enter state 113
 
 
-State 86
+State 88
 
 	Expr -> 'fun' '(' ListArg . ')' '->' Expr           (rule 28)
 
-	')'            shift, and enter state 110
+	')'            shift, and enter state 112
 
 
-State 87
+State 89
 
 	Expr -> 'if' Expr 'then' . Expr 'else' Expr         (rule 27)
+
+	'!'            shift, and enter state 25
+	'('            shift, and enter state 26
+	'-'            shift, and enter state 27
+	'['            shift, and enter state 28
+	'_'            shift, and enter state 29
+	'fun'          shift, and enter state 30
+	'if'           shift, and enter state 31
+	'let'          shift, and enter state 32
+	'match'        shift, and enter state 33
+	L_integ        shift, and enter state 2
+	L_LIdent       shift, and enter state 8
+	L_UIdent       shift, and enter state 10
+
+	Integer        goto state 14
+	LIdent         goto state 15
+	UIdent         goto state 16
+	Expr           goto state 111
+	Expr6          goto state 18
+	Expr5          goto state 19
+	Expr4          goto state 20
+	Expr3          goto state 21
+	Expr2          goto state 22
+	Expr1          goto state 23
+	Literal        goto state 24
+
+State 90
+
+	Expr -> 'let' Expr '::' . Type '=' Expr 'in' Expr    (rule 24)
+
+	'('            shift, and enter state 37
+	L_LIdent       shift, and enter state 8
+	L_UIdent       shift, and enter state 10
+
+	LIdent         goto state 34
+	UIdent         goto state 35
+	Type           goto state 110
+
+State 91
+
+	Expr -> 'let' Expr '=' . Expr 'in' Expr             (rule 25)
 
 	'!'            shift, and enter state 25
 	'('            shift, and enter state 26
@@ -1742,111 +1800,70 @@ State 87
 	Expr1          goto state 23
 	Literal        goto state 24
 
-State 88
-
-	Expr -> 'let' Expr '::' . Type '=' Expr 'in' Expr    (rule 24)
-
-	'('            shift, and enter state 37
-	L_LIdent       shift, and enter state 8
-	L_UIdent       shift, and enter state 10
-
-	LIdent         goto state 34
-	UIdent         goto state 35
-	Type           goto state 108
-
-State 89
-
-	Expr -> 'let' Expr '=' . Expr 'in' Expr             (rule 25)
-
-	'!'            shift, and enter state 25
-	'('            shift, and enter state 26
-	'-'            shift, and enter state 27
-	'['            shift, and enter state 28
-	'_'            shift, and enter state 29
-	'fun'          shift, and enter state 30
-	'if'           shift, and enter state 31
-	'let'          shift, and enter state 32
-	'match'        shift, and enter state 33
-	L_integ        shift, and enter state 2
-	L_LIdent       shift, and enter state 8
-	L_UIdent       shift, and enter state 10
-
-	Integer        goto state 14
-	LIdent         goto state 15
-	UIdent         goto state 16
-	Expr           goto state 107
-	Expr6          goto state 18
-	Expr5          goto state 19
-	Expr4          goto state 20
-	Expr3          goto state 21
-	Expr2          goto state 22
-	Expr1          goto state 23
-	Literal        goto state 24
-
-State 90
+State 92
 
 	Expr -> 'match' Expr 'with' . '(' ListMatchBranch ')'    (rule 26)
 
-	'('            shift, and enter state 106
+	'('            shift, and enter state 108
 
 
-State 91
+State 93
 
 	ListType -> Type .                                  (rule 19)
 	ListType -> Type . ',' ListType                     (rule 20)
 
 	')'            reduce using rule 19
-	','            shift, and enter state 105
+	','            shift, and enter state 107
 
 
-State 92
+State 94
 
 	Type -> UIdent '(' ListType . ')'                   (rule 16)
 
-	')'            shift, and enter state 104
+	')'            shift, and enter state 106
 
 
-State 93
+State 95
 
 	TopDef -> LIdent '::' Type '=' Expr .               (rule 9)
 
 	';;'           reduce using rule 9
 
 
-State 94
+State 96
 
 	Type -> '(' ListLIdent ')' . '=>' Type              (rule 18)
 
-	'=>'           shift, and enter state 103
+	'=>'           shift, and enter state 105
 
 
-State 95
+State 97
 
 	TopDef -> 'type' UIdent '(' ListLIdent ')' . '=' ListConstructor    (rule 7)
 
-	'='            shift, and enter state 102
+	'='            shift, and enter state 104
 
 
-State 96
+State 98
 
 	ListLIdent -> LIdent ',' . ListLIdent               (rule 14)
 
 	L_LIdent       shift, and enter state 8
 
 	LIdent         goto state 44
-	ListLIdent     goto state 101
+	ListLIdent     goto state 103
 
-State 97
+State 99
 
 	ListConstructor -> Constructor '|' . ListConstructor    (rule 12)
 
 	L_UIdent       shift, and enter state 10
 
 	UIdent         goto state 41
-	ListConstructorgoto state 100
+	ListConstructorgoto state 102
 	Constructor    goto state 43
 
-State 98
+State 100
 
 	Constructor -> UIdent '(' . ListType ')'            (rule 21)
 
@@ -1856,41 +1873,41 @@ State 98
 
 	LIdent         goto state 34
 	UIdent         goto state 35
-	Type           goto state 91
-	ListType       goto state 99
+	Type           goto state 93
+	ListType       goto state 101
 
-State 99
+State 101
 
 	Constructor -> UIdent '(' ListType . ')'            (rule 21)
 
-	')'            shift, and enter state 126
+	')'            shift, and enter state 128
 
 
-State 100
+State 102
 
 	ListConstructor -> Constructor '|' ListConstructor .    (rule 12)
 
 	';;'           reduce using rule 12
 
 
-State 101
+State 103
 
 	ListLIdent -> LIdent ',' ListLIdent .               (rule 14)
 
 	')'            reduce using rule 14
 
 
-State 102
+State 104
 
 	TopDef -> 'type' UIdent '(' ListLIdent ')' '=' . ListConstructor    (rule 7)
 
 	L_UIdent       shift, and enter state 10
 
 	UIdent         goto state 41
-	ListConstructorgoto state 125
+	ListConstructorgoto state 127
 	Constructor    goto state 43
 
-State 103
+State 105
 
 	Type -> '(' ListLIdent ')' '=>' . Type              (rule 18)
 
@@ -1900,9 +1917,9 @@ State 103
 
 	LIdent         goto state 34
 	UIdent         goto state 35
-	Type           goto state 124
+	Type           goto state 126
 
-State 104
+State 106
 
 	Type -> UIdent '(' ListType ')' .                   (rule 16)
 
@@ -1911,7 +1928,7 @@ State 104
 	'='            reduce using rule 16
 
 
-State 105
+State 107
 
 	ListType -> Type ',' . ListType                     (rule 20)
 
@@ -1921,58 +1938,58 @@ State 105
 
 	LIdent         goto state 34
 	UIdent         goto state 35
-	Type           goto state 91
-	ListType       goto state 123
+	Type           goto state 93
+	ListType       goto state 125
 
-State 106
+State 108
 
 	Expr -> 'match' Expr 'with' '(' . ListMatchBranch ')'    (rule 26)
 
 	')'            reduce using rule 54
-	'|'            shift, and enter state 122
+	'|'            shift, and enter state 124
 
-	ListMatchBranchgoto state 120
-	MatchBranch    goto state 121
-
-State 107
-
-	Expr -> 'let' Expr '=' Expr . 'in' Expr             (rule 25)
-
-	'in'           shift, and enter state 119
-
-
-State 108
-
-	Expr -> 'let' Expr '::' Type . '=' Expr 'in' Expr    (rule 24)
-
-	'='            shift, and enter state 118
-
+	ListMatchBranchgoto state 122
+	MatchBranch    goto state 123
 
 State 109
 
-	Expr -> 'if' Expr 'then' Expr . 'else' Expr         (rule 27)
+	Expr -> 'let' Expr '=' Expr . 'in' Expr             (rule 25)
 
-	'else'         shift, and enter state 117
+	'in'           shift, and enter state 121
 
 
 State 110
 
-	Expr -> 'fun' '(' ListArg ')' . '->' Expr           (rule 28)
+	Expr -> 'let' Expr '::' Type . '=' Expr 'in' Expr    (rule 24)
 
-	'->'           shift, and enter state 116
+	'='            shift, and enter state 120
 
 
 State 111
+
+	Expr -> 'if' Expr 'then' Expr . 'else' Expr         (rule 27)
+
+	'else'         shift, and enter state 119
+
+
+State 112
+
+	Expr -> 'fun' '(' ListArg ')' . '->' Expr           (rule 28)
+
+	'->'           shift, and enter state 118
+
+
+State 113
 
 	ListArg -> Arg ',' . ListArg                        (rule 53)
 
 	L_LIdent       shift, and enter state 8
 
-	LIdent         goto state 84
-	Arg            goto state 85
-	ListArg        goto state 115
+	LIdent         goto state 86
+	Arg            goto state 87
+	ListArg        goto state 117
 
-State 112
+State 114
 
 	Arg -> LIdent Type .                                (rule 23)
 
@@ -1980,7 +1997,7 @@ State 112
 	','            reduce using rule 23
 
 
-State 113
+State 115
 
 	ListExpr -> Expr ',' ListExpr .                     (rule 51)
 
@@ -1988,7 +2005,7 @@ State 113
 	']'            reduce using rule 51
 
 
-State 114
+State 116
 
 	Expr6 -> Expr6 '(' ListExpr ')' .                   (rule 35)
 
@@ -2020,16 +2037,74 @@ State 114
 	'||'           reduce using rule 35
 
 
-State 115
+State 117
 
 	ListArg -> Arg ',' ListArg .                        (rule 53)
 
 	')'            reduce using rule 53
 
 
-State 116
+State 118
 
 	Expr -> 'fun' '(' ListArg ')' '->' . Expr           (rule 28)
+
+	'!'            shift, and enter state 25
+	'('            shift, and enter state 26
+	'-'            shift, and enter state 27
+	'['            shift, and enter state 28
+	'_'            shift, and enter state 29
+	'fun'          shift, and enter state 30
+	'if'           shift, and enter state 31
+	'let'          shift, and enter state 32
+	'match'        shift, and enter state 33
+	L_integ        shift, and enter state 2
+	L_LIdent       shift, and enter state 8
+	L_UIdent       shift, and enter state 10
+
+	Integer        goto state 14
+	LIdent         goto state 15
+	UIdent         goto state 16
+	Expr           goto state 135
+	Expr6          goto state 18
+	Expr5          goto state 19
+	Expr4          goto state 20
+	Expr3          goto state 21
+	Expr2          goto state 22
+	Expr1          goto state 23
+	Literal        goto state 24
+
+State 119
+
+	Expr -> 'if' Expr 'then' Expr 'else' . Expr         (rule 27)
+
+	'!'            shift, and enter state 25
+	'('            shift, and enter state 26
+	'-'            shift, and enter state 27
+	'['            shift, and enter state 28
+	'_'            shift, and enter state 29
+	'fun'          shift, and enter state 30
+	'if'           shift, and enter state 31
+	'let'          shift, and enter state 32
+	'match'        shift, and enter state 33
+	L_integ        shift, and enter state 2
+	L_LIdent       shift, and enter state 8
+	L_UIdent       shift, and enter state 10
+
+	Integer        goto state 14
+	LIdent         goto state 15
+	UIdent         goto state 16
+	Expr           goto state 134
+	Expr6          goto state 18
+	Expr5          goto state 19
+	Expr4          goto state 20
+	Expr3          goto state 21
+	Expr2          goto state 22
+	Expr1          goto state 23
+	Literal        goto state 24
+
+State 120
+
+	Expr -> 'let' Expr '::' Type '=' . Expr 'in' Expr    (rule 24)
 
 	'!'            shift, and enter state 25
 	'('            shift, and enter state 26
@@ -2056,9 +2131,9 @@ State 116
 	Expr1          goto state 23
 	Literal        goto state 24
 
-State 117
+State 121
 
-	Expr -> 'if' Expr 'then' Expr 'else' . Expr         (rule 27)
+	Expr -> 'let' Expr '=' Expr 'in' . Expr             (rule 25)
 
 	'!'            shift, and enter state 25
 	'('            shift, and enter state 26
@@ -2085,82 +2160,24 @@ State 117
 	Expr1          goto state 23
 	Literal        goto state 24
 
-State 118
-
-	Expr -> 'let' Expr '::' Type '=' . Expr 'in' Expr    (rule 24)
-
-	'!'            shift, and enter state 25
-	'('            shift, and enter state 26
-	'-'            shift, and enter state 27
-	'['            shift, and enter state 28
-	'_'            shift, and enter state 29
-	'fun'          shift, and enter state 30
-	'if'           shift, and enter state 31
-	'let'          shift, and enter state 32
-	'match'        shift, and enter state 33
-	L_integ        shift, and enter state 2
-	L_LIdent       shift, and enter state 8
-	L_UIdent       shift, and enter state 10
-
-	Integer        goto state 14
-	LIdent         goto state 15
-	UIdent         goto state 16
-	Expr           goto state 131
-	Expr6          goto state 18
-	Expr5          goto state 19
-	Expr4          goto state 20
-	Expr3          goto state 21
-	Expr2          goto state 22
-	Expr1          goto state 23
-	Literal        goto state 24
-
-State 119
-
-	Expr -> 'let' Expr '=' Expr 'in' . Expr             (rule 25)
-
-	'!'            shift, and enter state 25
-	'('            shift, and enter state 26
-	'-'            shift, and enter state 27
-	'['            shift, and enter state 28
-	'_'            shift, and enter state 29
-	'fun'          shift, and enter state 30
-	'if'           shift, and enter state 31
-	'let'          shift, and enter state 32
-	'match'        shift, and enter state 33
-	L_integ        shift, and enter state 2
-	L_LIdent       shift, and enter state 8
-	L_UIdent       shift, and enter state 10
-
-	Integer        goto state 14
-	LIdent         goto state 15
-	UIdent         goto state 16
-	Expr           goto state 130
-	Expr6          goto state 18
-	Expr5          goto state 19
-	Expr4          goto state 20
-	Expr3          goto state 21
-	Expr2          goto state 22
-	Expr1          goto state 23
-	Literal        goto state 24
-
-State 120
+State 122
 
 	Expr -> 'match' Expr 'with' '(' ListMatchBranch . ')'    (rule 26)
 
-	')'            shift, and enter state 129
+	')'            shift, and enter state 131
 
 
-State 121
+State 123
 
 	ListMatchBranch -> MatchBranch . ListMatchBranch    (rule 55)
 
 	')'            reduce using rule 54
-	'|'            shift, and enter state 122
+	'|'            shift, and enter state 124
 
-	ListMatchBranchgoto state 128
-	MatchBranch    goto state 121
+	ListMatchBranchgoto state 130
+	MatchBranch    goto state 123
 
-State 122
+State 124
 
 	MatchBranch -> '|' . Expr '->' Expr                 (rule 56)
 
@@ -2180,7 +2197,7 @@ State 122
 	Integer        goto state 14
 	LIdent         goto state 15
 	UIdent         goto state 16
-	Expr           goto state 127
+	Expr           goto state 129
 	Expr6          goto state 18
 	Expr5          goto state 19
 	Expr4          goto state 20
@@ -2189,14 +2206,14 @@ State 122
 	Expr1          goto state 23
 	Literal        goto state 24
 
-State 123
+State 125
 
 	ListType -> Type ',' ListType .                     (rule 20)
 
 	')'            reduce using rule 20
 
 
-State 124
+State 126
 
 	Type -> '(' ListLIdent ')' '=>' Type .              (rule 18)
 
@@ -2205,14 +2222,14 @@ State 124
 	'='            reduce using rule 18
 
 
-State 125
+State 127
 
 	TopDef -> 'type' UIdent '(' ListLIdent ')' '=' ListConstructor .    (rule 7)
 
 	';;'           reduce using rule 7
 
 
-State 126
+State 128
 
 	Constructor -> UIdent '(' ListType ')' .            (rule 21)
 
@@ -2220,21 +2237,21 @@ State 126
 	'|'            reduce using rule 21
 
 
-State 127
+State 129
 
 	MatchBranch -> '|' Expr . '->' Expr                 (rule 56)
 
-	'->'           shift, and enter state 135
+	'->'           shift, and enter state 137
 
 
-State 128
+State 130
 
 	ListMatchBranch -> MatchBranch ListMatchBranch .    (rule 55)
 
 	')'            reduce using rule 55
 
 
-State 129
+State 131
 
 	Expr -> 'match' Expr 'with' '(' ListMatchBranch ')' .    (rule 26)
 
@@ -2252,7 +2269,7 @@ State 129
 	'|'            reduce using rule 26
 
 
-State 130
+State 132
 
 	Expr -> 'let' Expr '=' Expr 'in' Expr .             (rule 25)
 
@@ -2270,14 +2287,14 @@ State 130
 	'|'            reduce using rule 25
 
 
-State 131
+State 133
 
 	Expr -> 'let' Expr '::' Type '=' Expr . 'in' Expr    (rule 24)
 
-	'in'           shift, and enter state 134
+	'in'           shift, and enter state 136
 
 
-State 132
+State 134
 
 	Expr -> 'if' Expr 'then' Expr 'else' Expr .         (rule 27)
 
@@ -2295,7 +2312,7 @@ State 132
 	'|'            reduce using rule 27
 
 
-State 133
+State 135
 
 	Expr -> 'fun' '(' ListArg ')' '->' Expr .           (rule 28)
 
@@ -2313,7 +2330,7 @@ State 133
 	'|'            reduce using rule 28
 
 
-State 134
+State 136
 
 	Expr -> 'let' Expr '::' Type '=' Expr 'in' . Expr    (rule 24)
 
@@ -2333,7 +2350,7 @@ State 134
 	Integer        goto state 14
 	LIdent         goto state 15
 	UIdent         goto state 16
-	Expr           goto state 137
+	Expr           goto state 139
 	Expr6          goto state 18
 	Expr5          goto state 19
 	Expr4          goto state 20
@@ -2342,7 +2359,7 @@ State 134
 	Expr1          goto state 23
 	Literal        goto state 24
 
-State 135
+State 137
 
 	MatchBranch -> '|' Expr '->' . Expr                 (rule 56)
 
@@ -2362,7 +2379,7 @@ State 135
 	Integer        goto state 14
 	LIdent         goto state 15
 	UIdent         goto state 16
-	Expr           goto state 136
+	Expr           goto state 138
 	Expr6          goto state 18
 	Expr5          goto state 19
 	Expr4          goto state 20
@@ -2371,7 +2388,7 @@ State 135
 	Expr1          goto state 23
 	Literal        goto state 24
 
-State 136
+State 138
 
 	MatchBranch -> '|' Expr '->' Expr .                 (rule 56)
 
@@ -2379,7 +2396,7 @@ State 136
 	'|'            reduce using rule 56
 
 
-State 137
+State 139
 
 	Expr -> 'let' Expr '::' Type '=' Expr 'in' Expr .    (rule 24)
 
@@ -2401,6 +2418,6 @@ State 137
 Grammar Totals
 -----------------------------------------------------------------------------
 Number of rules: 69
-Number of terminals: 38
+Number of terminals: 39
 Number of non-terminals: 28
-Number of states: 138
+Number of states: 140

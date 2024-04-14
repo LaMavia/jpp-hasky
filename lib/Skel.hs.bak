@@ -32,6 +32,7 @@ transTopDef x = case x of
   Abs.TDDataV _ uident lidents constructors -> failure x
   Abs.TDDataNV _ uident constructors -> failure x
   Abs.TDDeclaration _ lident type_ expr -> failure x
+  Abs.TDDeclarationNT _ lident expr -> failure x
 
 transType :: Show a => Abs.Type' a -> Result
 transType x = case x of
@@ -52,6 +53,7 @@ transArg x = case x of
 transExpr :: Show a => Abs.Expr' a -> Result
 transExpr x = case x of
   Abs.ELet _ expr1 type_ expr2 expr3 -> failure x
+  Abs.ELetNT _ expr1 expr2 expr3 -> failure x
   Abs.EMatch _ expr matchbranchs -> failure x
   Abs.EIf _ expr1 expr2 expr3 -> failure x
   Abs.ELambda _ args expr -> failure x

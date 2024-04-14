@@ -74,7 +74,7 @@ EList.     Expr ::= "[" [Expr] "]" ;
 
 EId.       Expr6 ::= LIdent ;
 
-EConstr.   Expr6 ::= UIdent ;
+EConstr.   Expr6 ::= UIdent "." UIdent;
 
 EIgnore.   Expr6 ::= "_" ;
 

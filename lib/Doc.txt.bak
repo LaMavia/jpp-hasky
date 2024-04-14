@@ -98,8 +98,7 @@ All other symbols are terminals.
   | //[Expr]// | -> | **eps**
   |  |  **|**  | //Expr//
   |  |  **|**  | //Expr// ``,`` //[Expr]//
-  | //[Arg]// | -> | **eps**
-  |  |  **|**  | //Arg//
+  | //[Arg]// | -> | //Arg//
   |  |  **|**  | //Arg// ``,`` //[Arg]//
   | //[MatchBranch]// | -> | **eps**
   |  |  **|**  | //MatchBranch// //[MatchBranch]//

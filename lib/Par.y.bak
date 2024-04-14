@@ -172,8 +172,7 @@ ListExpr
 
 ListArg :: { (Abs.BNFC'Position, [Abs.Arg]) }
 ListArg
-  : {- empty -} { (Abs.BNFC'NoPosition, []) }
-  | Arg { (fst $1, (:[]) (snd $1)) }
+  : Arg { (fst $1, (:[]) (snd $1)) }
   | Arg ',' ListArg { (fst $1, (:) (snd $1) (snd $3)) }
 
 ListMatchBranch :: { (Abs.BNFC'Position, [Abs.MatchBranch]) }

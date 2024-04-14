@@ -59,7 +59,7 @@ transExpr x = case x of
   Abs.ELambda _ args expr -> failure x
   Abs.EList _ exprs -> failure x
   Abs.EId _ lident -> failure x
-  Abs.EConstr _ uident -> failure x
+  Abs.EConstr _ uident1 uident2 -> failure x
   Abs.EIgnore _ -> failure x
   Abs.EApp _ expr exprs -> failure x
   Abs.ELit _ literal -> failure x

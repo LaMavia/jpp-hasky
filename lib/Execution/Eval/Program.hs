@@ -1,9 +1,10 @@
 module Execution.Eval.Program where
 
-import           Abs
-import           Runtime
-import           Execution.Eval.TopDef
+import Abs (Program, Program' (Program))
+import Execution.Eval.TopDef (evalTopDef)
+import Runtime.RTError (placeOfProgram, rtCatch)
+import Runtime.RTEval (RTEval)
 
 evalProgram :: RTEval Program ()
-evalProgram (Program pos defs) s = mapM_ evalTopDef defs
-
+evalProgram p@(Program _ defs) =
+  rtCatch (mapM_ evalTopDef defs) (placeOfProgram p)

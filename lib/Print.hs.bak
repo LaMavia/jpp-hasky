@@ -155,6 +155,7 @@ instance Print (Abs.TopDef' a) where
     Abs.TDDataV _ uident lidents constructors -> prPrec i 0 (concatD [doc (showString "type"), prt 0 uident, doc (showString "("), prt 0 lidents, doc (showString ")"), doc (showString "="), prt 0 constructors])
     Abs.TDDataNV _ uident constructors -> prPrec i 0 (concatD [doc (showString "type"), prt 0 uident, doc (showString "="), prt 0 constructors])
     Abs.TDDeclaration _ lident type_ expr -> prPrec i 0 (concatD [prt 0 lident, doc (showString "::"), prt 0 type_, doc (showString "="), prt 0 expr])
+    Abs.TDDeclarationNT _ lident expr -> prPrec i 0 (concatD [prt 0 lident, doc (showString "="), prt 0 expr])
 
 instance Print [Abs.Constructor' a] where
   prt _ [] = concatD []
@@ -190,6 +191,7 @@ instance Print (Abs.Arg' a) where
 instance Print (Abs.Expr' a) where
   prt i = \case
     Abs.ELet _ expr1 type_ expr2 expr3 -> prPrec i 0 (concatD [doc (showString "let"), prt 0 expr1, doc (showString "::"), prt 0 type_, doc (showString "="), prt 0 expr2, doc (showString "in"), prt 0 expr3])
+    Abs.ELetNT _ expr1 expr2 expr3 -> prPrec i 0 (concatD [doc (showString "let"), prt 0 expr1, doc (showString "="), prt 0 expr2, doc (showString "in"), prt 0 expr3])
     Abs.EMatch _ expr matchbranchs -> prPrec i 0 (concatD [doc (showString "match"), prt 0 expr, doc (showString "with"), doc (showString "("), prt 0 matchbranchs, doc (showString ")")])
     Abs.EIf _ expr1 expr2 expr3 -> prPrec i 0 (concatD [doc (showString "if"), prt 0 expr1, doc (showString "then"), prt 0 expr2, doc (showString "else"), prt 0 expr3])
     Abs.ELambda _ args expr -> prPrec i 0 (concatD [doc (showString "fun"), doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "->"), prt 0 expr])

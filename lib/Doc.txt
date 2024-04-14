@@ -35,11 +35,11 @@ The reserved words used in  are the following:
 The symbols used in  are the following:
   | ;; | ( | ) | =
   | :: | | | , | =>
-  | -> | [ | ] | _
-  | - | ! | && | ||
-  | + | * | / | %
-  | < | <= | > | >=
-  | == | != |  |
+  | -> | [ | ] | .
+  | _ | - | ! | &&
+  | || | + | * | /
+  | % | < | <= | >
+  | >= | == | != |
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with (* and *).
@@ -79,7 +79,7 @@ All other symbols are terminals.
   |  |  **|**  | //Expr1// ``||`` //Expr//
   |  |  **|**  | //Expr1//
   | //Expr6// | -> | //LIdent//
-  |  |  **|**  | //UIdent//
+  |  |  **|**  | //UIdent// ``.`` //UIdent//
   |  |  **|**  | ``_``
   |  |  **|**  | //Expr6// ``(`` //[Expr]// ``)``
   |  |  **|**  | //Literal//

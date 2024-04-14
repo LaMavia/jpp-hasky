@@ -28,7 +28,7 @@ $u = [. \n]          -- universal: any character
 
 -- Symbols and non-identifier-like reserved words
 
-@rsyms = \; \; | \( | \) | \= | \: \: | \| | \, | \= \> | \\ | \- \> | \[ | \] | \_ | \- | \! | \& \& | \| \| | \+ | \* | \/ | \% | \< | \< \= | \> | \> \= | \= \= | \! \=
+@rsyms = \; \; | \( | \) | \= | \: \: | \| | \, | \= \> | \- \> | \[ | \] | \_ | \- | \! | \& \& | \| \| | \+ | \* | \/ | \% | \< | \< \= | \> | \> \= | \= \= | \! \=
 
 :-
 
@@ -174,13 +174,13 @@ resWords =
        (b ";;" 14
           (b "/" 12 (b "->" 11 (b "-" 10 N N) N) (b "::" 13 N N))
           (b "<=" 16 (b "<" 15 N N) (b "=" 17 N N))))
-    (b "else" 27
-       (b "\\" 23
+    (b "if" 27
+       (b "]" 23
           (b ">=" 21 (b ">" 20 (b "=>" 19 N N) N) (b "[" 22 N N))
-          (b "_" 25 (b "]" 24 N N) (b "case" 26 N N)))
-       (b "then" 32
-          (b "let" 30 (b "in" 29 (b "if" 28 N N) N) (b "of" 31 N N))
-          (b "|" 34 (b "type" 33 N N) (b "||" 35 N N))))
+          (b "else" 25 (b "_" 24 N N) (b "fun" 26 N N)))
+       (b "type" 32
+          (b "match" 30 (b "let" 29 (b "in" 28 N N) N) (b "then" 31 N N))
+          (b "|" 34 (b "with" 33 N N) (b "||" 35 N N))))
   where
   b s n = B bs (TS bs n)
     where

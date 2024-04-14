@@ -197,7 +197,7 @@ instance Print (Abs.Expr' a) where
     Abs.ELambda _ args expr -> prPrec i 0 (concatD [doc (showString "fun"), doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "->"), prt 0 expr])
     Abs.EList _ exprs -> prPrec i 0 (concatD [doc (showString "["), prt 0 exprs, doc (showString "]")])
     Abs.EId _ lident -> prPrec i 6 (concatD [prt 0 lident])
-    Abs.EConstr _ uident -> prPrec i 6 (concatD [prt 0 uident])
+    Abs.EConstr _ uident1 uident2 -> prPrec i 6 (concatD [prt 0 uident1, doc (showString "."), prt 0 uident2])
     Abs.EIgnore _ -> prPrec i 6 (concatD [doc (showString "_")])
     Abs.EApp _ expr exprs -> prPrec i 6 (concatD [prt 6 expr, doc (showString "("), prt 0 exprs, doc (showString ")")])
     Abs.ELit _ literal -> prPrec i 6 (concatD [prt 0 literal])

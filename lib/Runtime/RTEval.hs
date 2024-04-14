@@ -1,8 +1,9 @@
 module Runtime.RTEval where
 
-import Runtime.RTState
-import Runtime.RTError
-import Runtime.RTVal
+import Control.Monad.Trans.Except (ExceptT)
+import Control.Monad.Trans.Reader (ReaderT)
+import Control.Monad.Trans.State (StateT)
+import Runtime.RTError (RTError)
+import Runtime.RTState (RTEnv, RTState)
 
-type RTEval a b = a -> RTState -> RTResult b
-
+type RTEval a b = a -> ReaderT RTEnv (StateT RTState (ExceptT RTError IO)) b
