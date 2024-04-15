@@ -7,4 +7,4 @@ import Runtime.RTEval (RTEval)
 
 evalProgram :: RTEval Program ()
 evalProgram p@(Program _ defs) =
-  rtCatch (mapM_ evalTopDef defs) (placeOfProgram p)
+  rtCatch (placeOfProgram p) (mapM_ evalTopDef defs)
