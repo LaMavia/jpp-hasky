@@ -4,19 +4,24 @@
 module Runtime.RTVal where
 
 import           Data.List               (intercalate)
+import qualified Data.Map.Strict         as Map
 import           Data.String.Interpolate (i)
-import           Runtime.RTError
+import           Runtime.RTError         (RTResult)
 
 data RTVal
   = RTInt !Int
   | RTConstr !String !String ![RTVal]
   | RTFunc !([RTVal] -> RTResult RTVal)
   | RTType !Type
+  | RTData !String !(Map.Map String DataConstr)
 
 data Type
   = TInt
-  | TBool
-  | TFunc ![Type] !Type
+  | TVar !String
+  | TIdent !String ![Type]
+
+data DataConstr
+  = DConstr ![Type]
 
 instance Show RTVal where
   show (RTInt n) = [i|#{n} :: Int|]

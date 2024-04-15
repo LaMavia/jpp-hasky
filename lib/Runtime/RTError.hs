@@ -119,10 +119,10 @@ placeOfExpr x = case x of
   Abs.EIf pos expr1 _ _ ->
     let c = snd $ placeOfExpr expr1
      in (pos, [i|if #{c}|])
-  Abs.ELambda pos args expr ->
+  Abs.ELambda pos args _ ->
     let a = intercalate ", " $ snd . placeOfArg <$> args
      in (pos, [i|fun (#{a})|])
-  Abs.EList pos exprs ->
+  Abs.EList pos _ ->
     (pos, "<<list>>")
   Abs.EId pos lident ->
     (pos, placeOfLIdent lident)
