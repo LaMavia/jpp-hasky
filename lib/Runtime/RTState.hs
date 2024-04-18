@@ -7,11 +7,8 @@ import Runtime.RTVal (RTVal)
 
 type Location = Integer
 
-type State = Map.Map Location RTVal
-
 type RTEnv = Map.Map String Location
 
-data RTState = RTState
-  { loc :: !Integer,
-    state :: !State
-  }
+type State = Map.Map Location RTVal
+
+data RTState = RTState {state :: !State, loc :: !Location}

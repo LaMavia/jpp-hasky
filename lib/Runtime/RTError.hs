@@ -48,6 +48,9 @@ instance Show RTError where
     where
       callstackWithPos = first (maybe ("?", "?") (bimap show show)) <$> callstack
 
+rtThrow :: (MonadError RTError m) => String -> m a
+rtThrow m = throwError $ RTError {callstack = [], message = m}
+
 rtError :: CallstackEntry -> String -> RTError
 rtError e m = RTError {callstack = [e], message = m}
 

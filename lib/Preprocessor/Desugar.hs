@@ -2,7 +2,7 @@
 
 module Preprocessor.Desugar where
 
-import           Abs
+import Abs
 
 positionOfGenericExpr :: Abs.Expr' a -> a
 positionOfGenericExpr = \case
@@ -40,7 +40,7 @@ desugarTopDef x = case x of
   Abs.TDDataV pos uident lidents constructors ->
     Abs.TDDataV pos uident lidents (desugarConstructor <$> constructors)
   Abs.TDDataNV pos uident constructors ->
-    Abs.TDDataNV pos uident (desugarConstructor <$> constructors)
+    desugarTopDef (Abs.TDDataV pos uident [] constructors)
   Abs.TDDeclaration pos lident type_ expr ->
     Abs.TDDeclaration pos lident (desugarType type_) (desugarExpr expr)
   Abs.TDDeclarationNT pos lident expr ->

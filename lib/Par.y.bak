@@ -34,30 +34,31 @@ import Lex
   ','      { PT _ (TS _ 9)     }
   '-'      { PT _ (TS _ 10)    }
   '->'     { PT _ (TS _ 11)    }
-  '/'      { PT _ (TS _ 12)    }
-  '::'     { PT _ (TS _ 13)    }
-  ';;'     { PT _ (TS _ 14)    }
-  '<'      { PT _ (TS _ 15)    }
-  '<='     { PT _ (TS _ 16)    }
-  '='      { PT _ (TS _ 17)    }
-  '=='     { PT _ (TS _ 18)    }
-  '=>'     { PT _ (TS _ 19)    }
-  '>'      { PT _ (TS _ 20)    }
-  '>='     { PT _ (TS _ 21)    }
-  '['      { PT _ (TS _ 22)    }
-  ']'      { PT _ (TS _ 23)    }
-  '_'      { PT _ (TS _ 24)    }
-  'else'   { PT _ (TS _ 25)    }
-  'fun'    { PT _ (TS _ 26)    }
-  'if'     { PT _ (TS _ 27)    }
-  'in'     { PT _ (TS _ 28)    }
-  'let'    { PT _ (TS _ 29)    }
-  'match'  { PT _ (TS _ 30)    }
-  'then'   { PT _ (TS _ 31)    }
-  'type'   { PT _ (TS _ 32)    }
-  'with'   { PT _ (TS _ 33)    }
-  '|'      { PT _ (TS _ 34)    }
-  '||'     { PT _ (TS _ 35)    }
+  '.'      { PT _ (TS _ 12)    }
+  '/'      { PT _ (TS _ 13)    }
+  '::'     { PT _ (TS _ 14)    }
+  ';;'     { PT _ (TS _ 15)    }
+  '<'      { PT _ (TS _ 16)    }
+  '<='     { PT _ (TS _ 17)    }
+  '='      { PT _ (TS _ 18)    }
+  '=='     { PT _ (TS _ 19)    }
+  '=>'     { PT _ (TS _ 20)    }
+  '>'      { PT _ (TS _ 21)    }
+  '>='     { PT _ (TS _ 22)    }
+  '['      { PT _ (TS _ 23)    }
+  ']'      { PT _ (TS _ 24)    }
+  '_'      { PT _ (TS _ 25)    }
+  'else'   { PT _ (TS _ 26)    }
+  'fun'    { PT _ (TS _ 27)    }
+  'if'     { PT _ (TS _ 28)    }
+  'in'     { PT _ (TS _ 29)    }
+  'let'    { PT _ (TS _ 30)    }
+  'match'  { PT _ (TS _ 31)    }
+  'then'   { PT _ (TS _ 32)    }
+  'type'   { PT _ (TS _ 33)    }
+  'with'   { PT _ (TS _ 34)    }
+  '|'      { PT _ (TS _ 35)    }
+  '||'     { PT _ (TS _ 36)    }
   L_integ  { PT _ (TI _)       }
   L_LIdent { PT _ (T_LIdent _) }
   L_UIdent { PT _ (T_UIdent _) }
@@ -101,7 +102,7 @@ ListLIdent
 Type :: { (Abs.BNFC'Position, Abs.Type) }
 Type
   : LIdent { (fst $1, Abs.TVar (fst $1) (snd $1)) }
-  | UIdent '(' ListType ')' { (fst $1, Abs.TApp (fst $1) (snd $1) (snd $3)) }
+  | UIdent '.' UIdent '(' ListType ')' { (fst $1, Abs.TApp (fst $1) (snd $1) (snd $3) (snd $5)) }
   | UIdent { (fst $1, Abs.TType (fst $1) (snd $1)) }
   | '(' ListLIdent ')' '=>' Type { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.TBound (uncurry Abs.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $5)) }
 
@@ -132,7 +133,7 @@ Expr
 Expr6 :: { (Abs.BNFC'Position, Abs.Expr) }
 Expr6
   : LIdent { (fst $1, Abs.EId (fst $1) (snd $1)) }
-  | UIdent { (fst $1, Abs.EConstr (fst $1) (snd $1)) }
+  | UIdent '.' UIdent { (fst $1, Abs.EConstr (fst $1) (snd $1) (snd $3)) }
   | '_' { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.EIgnore (uncurry Abs.BNFC'Position (tokenLineCol $1))) }
   | Expr6 '(' ListExpr ')' { (fst $1, Abs.EApp (fst $1) (snd $1) (snd $3)) }
   | Literal { (fst $1, Abs.ELit (fst $1) (snd $1)) }

@@ -1,25 +1,26 @@
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE StrictData  #-}
+{-# LANGUAGE StrictData #-}
 
 module Runtime.RTVal where
 
-import           Data.List               (intercalate)
-import qualified Data.Map.Strict         as Map
-import           Data.String.Interpolate (i)
-import           Runtime.RTError         (RTResult)
+import Data.List (intercalate)
+import qualified Data.Map.Strict as Map
+import Data.String.Interpolate (i)
+import Runtime.RTError (RTResult)
 
 data RTVal
   = RTInt !Int
   | RTConstr !String !String ![RTVal]
   | RTFunc !([RTVal] -> RTResult RTVal)
   | RTType !Type
-  -- | RTData TypeName [Arguments] { ConstrName: [ConstrArgs] }
-  | RTData !String ![String] !(Map.Map String DataConstr)
+  | -- | RTData TypeName [Arguments] { ConstrName: [ConstrArgs] }
+    RTData !String ![String] !(Map.Map String DataConstr)
 
 data Type
   = TInt
   | TVar !String
   | TIdent !String ![Type]
+  | TUniv
 
 newtype DataConstr = DConstr [Type]
 
