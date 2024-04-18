@@ -13,15 +13,15 @@ data RTVal
   | RTConstr !String !String ![RTVal]
   | RTFunc !([RTVal] -> RTResult RTVal)
   | RTType !Type
-  | RTData !String !(Map.Map String DataConstr)
+  -- | RTData TypeName [Arguments] { ConstrName: [ConstrArgs] }
+  | RTData !String ![String] !(Map.Map String DataConstr)
 
 data Type
   = TInt
   | TVar !String
   | TIdent !String ![Type]
 
-data DataConstr
-  = DConstr ![Type]
+newtype DataConstr = DConstr [Type]
 
 instance Show RTVal where
   show (RTInt n) = [i|#{n} :: Int|]
