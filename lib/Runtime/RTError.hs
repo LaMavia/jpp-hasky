@@ -1,30 +1,21 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE StrictData #-}
+{-# LANGUAGE NamedFieldPuns   #-}
+{-# LANGUAGE QuasiQuotes      #-}
+{-# LANGUAGE StrictData       #-}
 
 module Runtime.RTError where
 
-import Abs
-  ( AddOp' (..),
-    Arg' (..),
-    BNFC'Position,
-    Constructor' (..),
-    Expr' (..),
-    LIdent (..),
-    Literal' (..),
-    MatchBranch' (..),
-    MulOp' (..),
-    Program' (..),
-    RelOp' (..),
-    TopDef' (..),
-    Type' (..),
-    UIdent (..),
-  )
-import Control.Monad.Error.Class (MonadError (catchError, throwError))
-import Data.Bifunctor (bimap, first)
-import Data.List (intercalate)
-import Data.String.Interpolate (i)
+import           Abs                       (AddOp' (..), Arg' (..),
+                                            BNFC'Position, Constructor' (..),
+                                            Expr' (..), LIdent (..),
+                                            Literal' (..), MatchBranch' (..),
+                                            MulOp' (..), Program' (..),
+                                            RelOp' (..), TopDef' (..),
+                                            Type' (..), UIdent (..))
+import           Control.Monad.Error.Class (MonadError (catchError, throwError))
+import           Data.Bifunctor            (bimap, first)
+import           Data.List                 (intercalate)
+import           Data.String.Interpolate   (i)
 
 type CallstackEntry = (BNFC'Position, String)
 
@@ -32,7 +23,7 @@ type RTResult = Either RTError
 
 data RTError = RTError
   { callstack :: ![CallstackEntry],
-    message :: !String
+    message   :: !String
   }
 
 instance Show RTError where
@@ -175,20 +166,20 @@ placeOfLiteral x = case x of
 
 placeOfAddOp :: (Show a) => Abs.AddOp' a -> (a, String)
 placeOfAddOp x = case x of
-  Abs.Plus pos -> (pos, "+")
+  Abs.Plus pos  -> (pos, "+")
   Abs.Minus pos -> (pos, "-")
 
 placeOfMulOp :: (Show a) => Abs.MulOp' a -> (a, String)
 placeOfMulOp x = case x of
   Abs.Times pos -> (pos, "*")
-  Abs.Div pos -> (pos, "/")
-  Abs.Mod pos -> (pos, "%")
+  Abs.Div pos   -> (pos, "/")
+  Abs.Mod pos   -> (pos, "%")
 
 placeOfRelOp :: (Show a) => Abs.RelOp' a -> (a, String)
 placeOfRelOp x = case x of
   Abs.LTH pos -> (pos, "<")
-  Abs.LE pos -> (pos, "<=")
+  Abs.LE pos  -> (pos, "<=")
   Abs.GTH pos -> (pos, ">")
-  Abs.GE pos -> (pos, ">=")
+  Abs.GE pos  -> (pos, ">=")
   Abs.EQU pos -> (pos, "==")
-  Abs.NE pos -> (pos, "!=")
+  Abs.NE pos  -> (pos, "!=")

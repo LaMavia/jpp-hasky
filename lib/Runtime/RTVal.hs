@@ -1,15 +1,15 @@
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE StrictData #-}
+{-# LANGUAGE StrictData  #-}
 
 module Runtime.RTVal where
 
-import Data.List (intercalate)
-import qualified Data.Map.Strict as Map
-import Data.String.Interpolate (i)
-import Runtime.RTError (RTResult)
+import           Data.List               (intercalate)
+import qualified Data.Map.Strict         as Map
+import           Data.String.Interpolate (i)
+import           Runtime.RTError         (RTResult)
 
 data RTVal
-  = RTInt !Int
+  = RTInt !Integer
   | RTConstr !String !String ![RTVal]
   | RTFunc !([RTVal] -> RTResult RTVal)
   | RTType !Type

@@ -1,6 +1,7 @@
 module Execution.Eval.TopDef where
 
 import           Abs
+import           Control.Monad.Reader        (MonadReader (local))
 import qualified Data.Map.Strict             as Map
 import           Execution.Eval.Expr         (evalExpr)
 import           Execution.Eval.Type         (evalType)
@@ -29,5 +30,5 @@ evalTopDef p@(TDDeclaration _ (LIdent name) _ e) =
   rtCatch (placeOfTopDef p) $ do
     env <- allocEnv name
     val <- evalExpr e
-    allocState name val
+    local (const env) $ allocState name val
     return env

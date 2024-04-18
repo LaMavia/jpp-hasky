@@ -2,19 +2,22 @@
 
 module Runtime.RTEval where
 
-import Control.Monad.Reader (MonadReader, ask, asks, local)
-import Control.Monad.State (gets, modify)
-import Control.Monad.Trans.Except (ExceptT)
-import Control.Monad.Trans.Reader (ReaderT)
-import Control.Monad.Trans.State (StateT)
-import Data.Foldable (foldrM)
-import qualified Data.Map.Strict as Map
-import Data.String.Interpolate (i)
-import Runtime.RTError (RTError, rtThrow)
-import Runtime.RTState (RTEnv, RTState (loc, state))
-import Runtime.RTVal (RTVal)
+import           Control.Monad.Reader       (MonadReader, ReaderT (runReaderT),
+                                             ask, asks, local)
+import           Control.Monad.State        (StateT (runStateT), gets, modify)
+import           Control.Monad.Trans.Except (ExceptT, runExceptT)
+import           Data.Foldable              (foldrM)
+import qualified Data.Map.Strict            as Map
+import           Data.String.Interpolate    (i)
+import           Runtime.RTError            (RTError, rtThrow)
+import           Runtime.RTState            (RTEnv, RTState (loc, state),
+                                             initialEnv, initialState)
+import           Runtime.RTVal              (RTVal)
 
 type RT = ReaderT RTEnv (StateT RTState (ExceptT RTError IO))
+
+runRT :: RT a -> IO (Either RTError (a, RTState))
+runRT m = runExceptT (runStateT (runReaderT m initialEnv) initialState)
 
 type RTEval a b = a -> RT b
 

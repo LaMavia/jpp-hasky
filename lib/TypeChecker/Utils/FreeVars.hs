@@ -1,8 +1,8 @@
 module TypeChecker.Utils.FreeVars where
 
 import qualified Abs
-import qualified Data.Set as Set
-import TypeChecker.Utils.BoundVars (bvOfTopDef, bvOfType)
+import qualified Data.Set                    as Set
+import           TypeChecker.Utils.BoundVars (bvOfTopDef, bvOfType)
 
 type FV a = Set.Set String -> a -> Set.Set String
 

@@ -98,6 +98,9 @@ library lib
                     , Execution.Unification
                     , Execution.Eval.Program
                     , Execution.Eval.TopDef
+                    , Execution.Eval.Type
+                    , Execution.Eval.Literal
+                    , Execution.Eval.Expr
                     , TypeChecker.Utils
                     , TypeChecker.Utils.FreeVars
                     , TypeChecker.Utils.BoundVars

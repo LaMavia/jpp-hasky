@@ -10,10 +10,10 @@ stringOfLident (Abs.LIdent x) = x
 
 bvOfTopDef :: (Show a) => BV (Abs.TopDef' a)
 bvOfTopDef x = case x of
-  Abs.TDDataV _ _ lidents _ -> Set.fromList $ stringOfLident <$> lidents
+  Abs.TDDataV _ _ lidents _     -> Set.fromList $ stringOfLident <$> lidents
   Abs.TDDeclaration _ _ type_ _ -> bvOfType type_
-  Abs.TDDataNV {} -> Set.empty
-  Abs.TDDeclarationNT {} -> Set.empty
+  Abs.TDDataNV {}               -> Set.empty
+  Abs.TDDeclarationNT {}        -> Set.empty
 
 bvOfType :: (Show a) => BV (Abs.Type' a)
 bvOfType x = case x of

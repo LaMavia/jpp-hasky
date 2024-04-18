@@ -1,7 +1,8 @@
 module Execution.Eval.Expr where
 
-import           Abs     (Expr)
-import           Runtime (RT, RTVal)
+import           Abs                    (Expr, Expr' (ELit))
+import           Execution.Eval.Literal (evalLiteral)
+import           Runtime                (RT, RTVal, placeOfExpr, rtCatch)
 
 evalExpr :: Expr -> RT RTVal
-evalExpr = undefined
+evalExpr e@(ELit _ lit) = rtCatch (placeOfExpr e) $ evalLiteral lit

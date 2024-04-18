@@ -3,16 +3,18 @@ module Main where
 import           Control.Monad        (when)
 import           Prelude              (Either (..), FilePath, IO, Int, Show,
                                        String, concat, getContents, mapM_,
-                                       putStrLn, readFile, show, unlines, ($),
-                                       (++), (.), (>), (>>), (>>=))
+                                       print, putStrLn, readFile, show, unlines,
+                                       ($), (++), (.), (>), (>>), (>>=))
 import           System.Environment   (getArgs)
 import           System.Exit          (exitFailure)
 
 import           Abs                  (Program)
+import           Execution.Eval       (evalProgram)
 import           Lex                  (Token, mkPosToken)
 import           Par                  (myLexer, pProgram)
 import           Preprocessor.Desugar (desugarProgram)
 import           Print                (printTree)
+import           Runtime              (runRT)
 import           Skel                 ()
 
 type Err        = Either String
@@ -36,7 +38,12 @@ run v p s =
       exitFailure
     Right tree -> do
       putStrLn "\nParse Successful!"
-      showTree v . desugarProgram $ tree
+      let program = desugarProgram tree
+      r <- runRT $ evalProgram program
+      case r of
+        Left err      -> print err
+        Right (_, st) -> print st
+      -- showTree v program
   where
   ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]
