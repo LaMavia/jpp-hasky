@@ -1,7 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 
 module Runtime.RTConsts where
-import           Runtime.RTVal (RTVal (RTConstr))
+import           Runtime.RTEval (RTVal (RTConstr))
 
 
 pattern RTCFalse :: RTVal

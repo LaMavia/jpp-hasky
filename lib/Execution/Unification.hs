@@ -7,9 +7,7 @@ import           Abs
 import           Control.Monad           (zipWithM)
 import qualified Data.Map.Strict         as Map
 import           Data.String.Interpolate (i)
-import           Runtime                 (RT, RTEnv, alloc, envSeq)
-import           Runtime.RTError         (RTResult, placeOfExpr, rtError)
-import           Runtime.RTVal
+import           Runtime
 
 type Unifier = Map.Map String RTVal
 

@@ -1,19 +1,16 @@
-{-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE QuasiQuotes     #-}
-{-# LANGUAGE TupleSections   #-}
+{-# LANGUAGE QuasiQuotes   #-}
+{-# LANGUAGE TupleSections #-}
 
 module Execution.Eval.Expr where
 
 import           Abs
-import           Control.Monad.Except   (MonadError (throwError))
-import           Control.Monad.Reader   (MonadReader (local))
-import           Data.Foldable          (Foldable (foldl'))
-import           Execution.Eval.Literal (evalLiteral)
-import           Execution.Unification  (applyUnifier, unify)
-import           Runtime                (RT, RTVal (RTConstr, RTInt), getVar,
-                                         pattern RTCFalse, pattern RTCTrue,
-                                         placeOfExpr, rtCatch, rtError,
-                                         rtOfBool, rtThrow, rtcFalse, rtcTrue)
+import           Control.Monad.Except    (MonadError (throwError))
+import           Control.Monad.Reader    (MonadReader (local))
+import           Data.Foldable           (Foldable (foldl'))
+import           Data.String.Interpolate (i)
+import           Execution.Eval.Literal  (evalLiteral)
+import           Execution.Unification   (applyUnifier, unify)
+import           Runtime
 
 
 evalExpr :: Expr -> RT RTVal
@@ -78,6 +75,19 @@ evalExprImpl (EApp _ cexpr@(EConstr {}) argExprs) = do
   newArgs <- mapM evalExpr argExprs
   return $ RTConstr t c (boundArgs <> newArgs)
 
+evalExprImpl (EApp _ fexpr@(ELambda {}) argExprs) = do
+  RTFunc f <- evalExpr fexpr
+  args <- mapM evalExpr argExprs
+  f args
+
+evalExprImpl (EApp _ iexpr@(EId {}) argExprs) = do
+  RTFunc f <- evalExpr iexpr
+  args <- mapM evalExpr argExprs
+  f args
+
+evalExprImpl (EApp _ expr _) = rtThrow [i|Invalid caller expression '#{expr}'|]
+
+
 evalExprImpl (EMul _ aexpr op bexpr) = do
   RTInt a <- evalExpr aexpr
   RTInt b <- evalExpr bexpr
@@ -105,6 +115,7 @@ evalExprImpl (ERel pos aexpr (NE pos') bexpr) = do
   return $ case v of
     RTCTrue  -> rtcFalse
     RTCFalse -> rtcTrue
+    _        -> undefined
 
 evalExprImpl (ERel _ aexpr op bexpr) = do
   RTInt a <- evalExpr aexpr
@@ -128,4 +139,11 @@ evalExprImpl (EOr _ aexpr bexpr) = do
     RTCTrue  -> return rtcTrue
     RTCFalse -> evalExpr bexpr
     _        -> undefined
--- evalExprImpl x = rtCatch (placeOfExpr x) (rtThrow [i|unmatched expression: #{x}|])
+
+evalExprImpl (ELambda _ fargs body) = return $ RTFunc f
+  where
+    argNames = (\(Arg _ (LIdent x) _) -> x) <$> fargs
+    f args = do
+      env <- envSeq (zipWith alloc argNames args)
+      local (const env) (evalExpr body)
+

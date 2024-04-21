@@ -92,8 +92,6 @@ library lib
                     , Execution.Eval
 
    other-modules:     Runtime.RTError
-                    , Runtime.RTState
-                    , Runtime.RTVal
                     , Runtime.RTEval
                     , Runtime.RTConsts
                     , Execution.Unification
