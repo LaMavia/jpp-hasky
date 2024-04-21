@@ -100,6 +100,21 @@ evalExprImpl (ERel _ aexpr (EQU _) bexpr) = do
   b <- evalExpr bexpr
   return $ rtOfBool $ a == b
 
+evalExprImpl (ERel pos aexpr (NE pos') bexpr) = do
+  v <- evalExprImpl (ERel pos aexpr (EQU pos') bexpr)
+  return $ case v of
+    RTCTrue  -> rtcFalse
+    RTCFalse -> rtcTrue
+
+evalExprImpl (ERel _ aexpr op bexpr) = do
+  RTInt a <- evalExpr aexpr
+  RTInt b <- evalExpr bexpr
+  return $ rtOfBool $ case op of
+    LTH _ -> a < b
+    LE _  -> a <= b
+    GTH _ -> a > b
+    GE _  -> a >= b
+
 evalExprImpl (EAnd _ aexpr bexpr) = do
   a <- evalExpr aexpr
   case a of
