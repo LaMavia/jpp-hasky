@@ -95,6 +95,7 @@ library lib
                     , Runtime.RTState
                     , Runtime.RTVal
                     , Runtime.RTEval
+                    , Runtime.RTConsts
                     , Execution.Unification
                     , Execution.Eval.Program
                     , Execution.Eval.TopDef

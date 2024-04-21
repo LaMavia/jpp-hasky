@@ -1,10 +1,10 @@
 module Main where
 
 import           Control.Monad        (when)
-import           Prelude              (Either (..), FilePath, IO, Int, Show,
-                                       String, concat, getContents, mapM_,
-                                       print, putStrLn, readFile, show, unlines,
-                                       ($), (++), (.), (>), (>>), (>>=))
+import           Prelude              (Either (..), FilePath, IO, Int, String,
+                                       concat, getContents, mapM_, print,
+                                       putStrLn, readFile, show, ($), (++), (.),
+                                       (>), (>>), (>>=))
 import           System.Environment   (getArgs)
 import           System.Exit          (exitFailure)
 
@@ -37,13 +37,11 @@ run v p s =
       putStrLn err
       exitFailure
     Right tree -> do
-      putStrLn "\nParse Successful!"
       let program = desugarProgram tree
       r <- runRT $ evalProgram program
       case r of
         Left err      -> print err
         Right (_, st) -> print st
-      -- showTree v program
   where
   ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]

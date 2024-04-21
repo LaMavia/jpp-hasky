@@ -28,7 +28,5 @@ evalTopDef p@(TDDeclarationNT {}) =
 
 evalTopDef p@(TDDeclaration _ (LIdent name) _ e) =
   rtCatch (placeOfTopDef p) $ do
-    env <- allocEnv name
     val <- evalExpr e
-    local (const env) $ allocState name val
-    return env
+    alloc name val

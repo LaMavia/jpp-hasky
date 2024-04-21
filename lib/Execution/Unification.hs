@@ -7,6 +7,7 @@ import           Abs
 import           Control.Monad           (zipWithM)
 import qualified Data.Map.Strict         as Map
 import           Data.String.Interpolate (i)
+import           Runtime                 (RT, RTEnv, alloc, envSeq)
 import           Runtime.RTError         (RTResult, placeOfExpr, rtError)
 import           Runtime.RTVal
 
@@ -37,3 +38,9 @@ unify p v =
   where
     pText = show p
     vText = show v
+
+
+applyUnifier :: Unifier -> RT RTEnv
+applyUnifier unifier = envSeq (uncurry alloc <$> Map.assocs unifier)
+
+
