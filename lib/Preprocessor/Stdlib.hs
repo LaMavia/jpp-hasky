@@ -8,7 +8,6 @@ import           Control.Monad.IO.Class  (MonadIO (liftIO))
 import           Data.Bifunctor          (Bifunctor (second))
 import           Data.Data               (Typeable)
 import           Data.String.Interpolate (i)
-import           Debug.Trace             (traceShowId)
 import           Par                     (myLexer, pProgram)
 import           Preprocessor.Desugar    (desugarProgram)
 import           Runtime                 (RT, RTEnv, RTVal (RTFunc), alloc,
@@ -68,6 +67,16 @@ definableStdlib =
           match xs with (
             | List.Nil()       -> []
             | List.Cons(h, t)  -> List.Cons(f(h), map(f, t))
+          )
+        ;;
+
+      foldr :: (a, b) => Fun(Fun(a, b, b), b, List(a), b)
+        = fun (f Fun(a, b, b), u0 b, xs List(a)) ->
+          match xs with (
+            | List.Nil() -> u0
+            | List.Cons(h, tl) ->
+              let u :: b = foldr(f, u0, tl)
+              in f(h, u)
           )
         ;;
     |]

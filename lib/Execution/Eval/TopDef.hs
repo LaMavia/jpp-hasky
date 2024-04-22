@@ -1,7 +1,6 @@
 module Execution.Eval.TopDef where
 
 import           Abs
-import           Control.Monad.Reader        (MonadReader (local))
 import qualified Data.Map.Strict             as Map
 import           Execution.Eval.Expr         (evalExpr)
 import           Execution.Eval.Type         (evalType)
