@@ -2,7 +2,7 @@
 
 module Preprocessor.Desugar where
 
-import Abs
+import           Abs
 
 positionOfGenericExpr :: Abs.Expr' a -> a
 positionOfGenericExpr = \case
@@ -81,7 +81,7 @@ desugarExpr x = case x of
     let aux e u =
           let ePos = positionOfGenericExpr e
            in Abs.EApp ePos (Abs.EConstr ePos (Abs.UIdent "List") (Abs.UIdent "Cons")) [e, u]
-     in foldr (aux . desugarExpr) (Abs.EConstr pos (Abs.UIdent "List") (Abs.UIdent "Nil")) exprs
+     in foldr (aux . desugarExpr) (Abs.EApp pos (Abs.EConstr pos (Abs.UIdent "List") (Abs.UIdent "Nil")) []) exprs
   Abs.EId pos lident -> Abs.EId pos lident
   Abs.EConstr pos t c -> Abs.EConstr pos t c
   Abs.EIgnore pos -> Abs.EIgnore pos

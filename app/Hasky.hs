@@ -13,6 +13,7 @@ import           Execution.Eval       (evalProgram)
 import           Lex                  (Token, mkPosToken)
 import           Par                  (myLexer, pProgram)
 import           Preprocessor.Desugar (desugarProgram)
+import           Preprocessor.Stdlib  (prependStdlib)
 import           Print                (printTree)
 import           Runtime              (runRT)
 import           Skel                 ()
@@ -37,7 +38,7 @@ run v p s =
       putStrLn err
       exitFailure
     Right tree -> do
-      let program = desugarProgram tree
+      let program = prependStdlib $ desugarProgram tree
       r <- runRT $ evalProgram program
       case r of
         Left err      -> print err

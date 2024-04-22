@@ -70,7 +70,7 @@ EIf.       Expr ::= "if" Expr "then" Expr "else" Expr ;
 
 ELambda.   Expr ::= "fun" "(" [Arg] ")" "->" Expr ;
 
-EList.     Expr ::= "[" [Expr] "]" ;
+EList.     Expr6 ::= "[" [Expr] "]" ;
 
 EId.       Expr6 ::= LIdent ;
 

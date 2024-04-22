@@ -35,9 +35,9 @@ Grammar
 	Expr -> 'match' Expr 'with' '(' ListMatchBranch ')'   (26)
 	Expr -> 'if' Expr 'then' Expr 'else' Expr          (27)
 	Expr -> 'fun' '(' ListArg ')' '->' Expr            (28)
-	Expr -> '[' ListExpr ']'                           (29)
-	Expr -> Expr1 '||' Expr                            (30)
-	Expr -> Expr1                                      (31)
+	Expr -> Expr1 '||' Expr                            (29)
+	Expr -> Expr1                                      (30)
+	Expr6 -> '[' ListExpr ']'                          (31)
 	Expr6 -> LIdent                                    (32)
 	Expr6 -> UIdent '.' UIdent                         (33)
 	Expr6 -> '_'                                       (34)
@@ -135,8 +135,8 @@ Non-terminals
 	ListType        rules 19, 20
 	Constructor     rules 21, 22
 	Arg             rule  23
-	Expr            rules 24, 25, 26, 27, 28, 29, 30, 31
-	Expr6           rules 32, 33, 34, 35, 36, 37
+	Expr            rules 24, 25, 26, 27, 28, 29, 30
+	Expr6           rules 31, 32, 33, 34, 35, 36, 37
 	Expr5           rules 38, 39, 40
 	Expr4           rules 41, 42
 	Expr3           rules 43, 44
@@ -611,21 +611,21 @@ State 22
 
 State 23
 
-	Expr -> Expr1 . '||' Expr                           (rule 30)
-	Expr -> Expr1 .                                     (rule 31)
+	Expr -> Expr1 . '||' Expr                           (rule 29)
+	Expr -> Expr1 .                                     (rule 30)
 
-	')'            reduce using rule 31
-	','            reduce using rule 31
-	'->'           reduce using rule 31
-	'::'           reduce using rule 31
-	';;'           reduce using rule 31
-	'='            reduce using rule 31
-	']'            reduce using rule 31
-	'else'         reduce using rule 31
-	'in'           reduce using rule 31
-	'then'         reduce using rule 31
-	'with'         reduce using rule 31
-	'|'            reduce using rule 31
+	')'            reduce using rule 30
+	','            reduce using rule 30
+	'->'           reduce using rule 30
+	'::'           reduce using rule 30
+	';;'           reduce using rule 30
+	'='            reduce using rule 30
+	']'            reduce using rule 30
+	'else'         reduce using rule 30
+	'in'           reduce using rule 30
+	'then'         reduce using rule 30
+	'with'         reduce using rule 30
+	'|'            reduce using rule 30
 	'||'           shift, and enter state 58
 
 
@@ -666,6 +666,7 @@ State 25
 	Expr5 -> '!' . Expr6                                (rule 39)
 
 	'('            shift, and enter state 26
+	'['            shift, and enter state 28
 	'_'            shift, and enter state 29
 	L_integ        shift, and enter state 2
 	L_LIdent       shift, and enter state 8
@@ -711,6 +712,7 @@ State 27
 	Expr5 -> '-' . Expr6                                (rule 38)
 
 	'('            shift, and enter state 26
+	'['            shift, and enter state 28
 	'_'            shift, and enter state 29
 	L_integ        shift, and enter state 2
 	L_LIdent       shift, and enter state 8
@@ -724,7 +726,7 @@ State 27
 
 State 28
 
-	Expr -> '[' . ListExpr ']'                          (rule 29)
+	Expr6 -> '[' . ListExpr ']'                         (rule 31)
 
 	'!'            shift, and enter state 25
 	'('            shift, and enter state 26
@@ -1078,7 +1080,7 @@ State 53
 
 State 54
 
-	Expr -> '[' ListExpr . ']'                          (rule 29)
+	Expr6 -> '[' ListExpr . ']'                         (rule 31)
 
 	']'            shift, and enter state 84
 
@@ -1158,7 +1160,7 @@ State 57
 
 State 58
 
-	Expr -> Expr1 '||' . Expr                           (rule 30)
+	Expr -> Expr1 '||' . Expr                           (rule 29)
 
 	'!'            shift, and enter state 25
 	'('            shift, and enter state 26
@@ -1192,6 +1194,7 @@ State 59
 	'!'            shift, and enter state 25
 	'('            shift, and enter state 26
 	'-'            shift, and enter state 27
+	'['            shift, and enter state 28
 	'_'            shift, and enter state 29
 	L_integ        shift, and enter state 2
 	L_LIdent       shift, and enter state 8
@@ -1213,6 +1216,7 @@ State 60
 	'!'            reduce using rule 68
 	'('            reduce using rule 68
 	'-'            reduce using rule 68
+	'['            reduce using rule 68
 	'_'            reduce using rule 68
 	L_integ        reduce using rule 68
 	L_LIdent       reduce using rule 68
@@ -1226,6 +1230,7 @@ State 61
 	'!'            shift, and enter state 25
 	'('            shift, and enter state 26
 	'-'            shift, and enter state 27
+	'['            shift, and enter state 28
 	'_'            shift, and enter state 29
 	L_integ        shift, and enter state 2
 	L_LIdent       shift, and enter state 8
@@ -1249,6 +1254,7 @@ State 62
 	'!'            reduce using rule 63
 	'('            reduce using rule 63
 	'-'            reduce using rule 63
+	'['            reduce using rule 63
 	'_'            reduce using rule 63
 	L_integ        reduce using rule 63
 	L_LIdent       reduce using rule 63
@@ -1262,6 +1268,7 @@ State 63
 	'!'            reduce using rule 64
 	'('            reduce using rule 64
 	'-'            reduce using rule 64
+	'['            reduce using rule 64
 	'_'            reduce using rule 64
 	L_integ        reduce using rule 64
 	L_LIdent       reduce using rule 64
@@ -1275,6 +1282,7 @@ State 64
 	'!'            reduce using rule 67
 	'('            reduce using rule 67
 	'-'            reduce using rule 67
+	'['            reduce using rule 67
 	'_'            reduce using rule 67
 	L_integ        reduce using rule 67
 	L_LIdent       reduce using rule 67
@@ -1288,6 +1296,7 @@ State 65
 	'!'            reduce using rule 65
 	'('            reduce using rule 65
 	'-'            reduce using rule 65
+	'['            reduce using rule 65
 	'_'            reduce using rule 65
 	L_integ        reduce using rule 65
 	L_LIdent       reduce using rule 65
@@ -1301,6 +1310,7 @@ State 66
 	'!'            reduce using rule 66
 	'('            reduce using rule 66
 	'-'            reduce using rule 66
+	'['            reduce using rule 66
 	'_'            reduce using rule 66
 	L_integ        reduce using rule 66
 	L_LIdent       reduce using rule 66
@@ -1314,6 +1324,7 @@ State 67
 	'!'            shift, and enter state 25
 	'('            shift, and enter state 26
 	'-'            shift, and enter state 27
+	'['            shift, and enter state 28
 	'_'            shift, and enter state 29
 	L_integ        shift, and enter state 2
 	L_LIdent       shift, and enter state 8
@@ -1334,6 +1345,7 @@ State 68
 	'!'            reduce using rule 58
 	'('            reduce using rule 58
 	'-'            reduce using rule 58
+	'['            reduce using rule 58
 	'_'            reduce using rule 58
 	L_integ        reduce using rule 58
 	L_LIdent       reduce using rule 58
@@ -1347,6 +1359,7 @@ State 69
 	'!'            reduce using rule 59
 	'('            reduce using rule 59
 	'-'            reduce using rule 59
+	'['            reduce using rule 59
 	'_'            reduce using rule 59
 	L_integ        reduce using rule 59
 	L_LIdent       reduce using rule 59
@@ -1360,6 +1373,7 @@ State 70
 	'!'            shift, and enter state 25
 	'('            shift, and enter state 26
 	'-'            shift, and enter state 27
+	'['            shift, and enter state 28
 	'_'            shift, and enter state 29
 	L_integ        shift, and enter state 2
 	L_LIdent       shift, and enter state 8
@@ -1379,6 +1393,7 @@ State 71
 	'!'            reduce using rule 62
 	'('            reduce using rule 62
 	'-'            reduce using rule 62
+	'['            reduce using rule 62
 	'_'            reduce using rule 62
 	L_integ        reduce using rule 62
 	L_LIdent       reduce using rule 62
@@ -1392,6 +1407,7 @@ State 72
 	'!'            reduce using rule 60
 	'('            reduce using rule 60
 	'-'            reduce using rule 60
+	'['            reduce using rule 60
 	'_'            reduce using rule 60
 	L_integ        reduce using rule 60
 	L_LIdent       reduce using rule 60
@@ -1405,6 +1421,7 @@ State 73
 	'!'            reduce using rule 61
 	'('            reduce using rule 61
 	'-'            reduce using rule 61
+	'['            reduce using rule 61
 	'_'            reduce using rule 61
 	L_integ        reduce using rule 61
 	L_LIdent       reduce using rule 61
@@ -1604,20 +1621,20 @@ State 81
 
 State 82
 
-	Expr -> Expr1 '||' Expr .                           (rule 30)
+	Expr -> Expr1 '||' Expr .                           (rule 29)
 
-	')'            reduce using rule 30
-	','            reduce using rule 30
-	'->'           reduce using rule 30
-	'::'           reduce using rule 30
-	';;'           reduce using rule 30
-	'='            reduce using rule 30
-	']'            reduce using rule 30
-	'else'         reduce using rule 30
-	'in'           reduce using rule 30
-	'then'         reduce using rule 30
-	'with'         reduce using rule 30
-	'|'            reduce using rule 30
+	')'            reduce using rule 29
+	','            reduce using rule 29
+	'->'           reduce using rule 29
+	'::'           reduce using rule 29
+	';;'           reduce using rule 29
+	'='            reduce using rule 29
+	']'            reduce using rule 29
+	'else'         reduce using rule 29
+	'in'           reduce using rule 29
+	'then'         reduce using rule 29
+	'with'         reduce using rule 29
+	'|'            reduce using rule 29
 
 
 State 83
@@ -1654,20 +1671,34 @@ State 83
 
 State 84
 
-	Expr -> '[' ListExpr ']' .                          (rule 29)
+	Expr6 -> '[' ListExpr ']' .                         (rule 31)
 
-	')'            reduce using rule 29
-	','            reduce using rule 29
-	'->'           reduce using rule 29
-	'::'           reduce using rule 29
-	';;'           reduce using rule 29
-	'='            reduce using rule 29
-	']'            reduce using rule 29
-	'else'         reduce using rule 29
-	'in'           reduce using rule 29
-	'then'         reduce using rule 29
-	'with'         reduce using rule 29
-	'|'            reduce using rule 29
+	'!='           reduce using rule 31
+	'%'            reduce using rule 31
+	'&&'           reduce using rule 31
+	'('            reduce using rule 31
+	')'            reduce using rule 31
+	'*'            reduce using rule 31
+	'+'            reduce using rule 31
+	','            reduce using rule 31
+	'-'            reduce using rule 31
+	'->'           reduce using rule 31
+	'/'            reduce using rule 31
+	'::'           reduce using rule 31
+	';;'           reduce using rule 31
+	'<'            reduce using rule 31
+	'<='           reduce using rule 31
+	'='            reduce using rule 31
+	'=='           reduce using rule 31
+	'>'            reduce using rule 31
+	'>='           reduce using rule 31
+	']'            reduce using rule 31
+	'else'         reduce using rule 31
+	'in'           reduce using rule 31
+	'then'         reduce using rule 31
+	'with'         reduce using rule 31
+	'|'            reduce using rule 31
+	'||'           reduce using rule 31
 
 
 State 85

@@ -89,12 +89,13 @@ library lib
                     , Par
                     , Runtime
                     , Preprocessor.Desugar
+                    , Preprocessor.Stdlib
                     , Execution.Eval
+                    , Execution.Unification
 
    other-modules:     Runtime.RTError
                     , Runtime.RTEval
                     , Runtime.RTConsts
-                    , Execution.Unification
                     , Execution.Eval.Program
                     , Execution.Eval.TopDef
                     , Execution.Eval.Type

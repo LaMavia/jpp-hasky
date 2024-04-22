@@ -9,3 +9,4 @@ fact :: Fun(Int, Int) =
     in aux(n, 1)
   ;;
 
+z :: Int = fact(5) ;;

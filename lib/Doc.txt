@@ -75,10 +75,10 @@ All other symbols are terminals.
   |  |  **|**  | ``match`` //Expr// ``with`` ``(`` //[MatchBranch]// ``)``
   |  |  **|**  | ``if`` //Expr// ``then`` //Expr// ``else`` //Expr//
   |  |  **|**  | ``fun`` ``(`` //[Arg]// ``)`` ``->`` //Expr//
-  |  |  **|**  | ``[`` //[Expr]// ``]``
   |  |  **|**  | //Expr1// ``||`` //Expr//
   |  |  **|**  | //Expr1//
-  | //Expr6// | -> | //LIdent//
+  | //Expr6// | -> | ``[`` //[Expr]// ``]``
+  |  |  **|**  | //LIdent//
   |  |  **|**  | //UIdent// ``.`` //UIdent//
   |  |  **|**  | ``_``
   |  |  **|**  | //Expr6// ``(`` //[Expr]// ``)``

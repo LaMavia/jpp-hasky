@@ -126,13 +126,13 @@ Expr
   | 'match' Expr 'with' '(' ListMatchBranch ')' { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.EMatch (uncurry Abs.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $5)) }
   | 'if' Expr 'then' Expr 'else' Expr { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.EIf (uncurry Abs.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $4) (snd $6)) }
   | 'fun' '(' ListArg ')' '->' Expr { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.ELambda (uncurry Abs.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $6)) }
-  | '[' ListExpr ']' { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.EList (uncurry Abs.BNFC'Position (tokenLineCol $1)) (snd $2)) }
   | Expr1 '||' Expr { (fst $1, Abs.EOr (fst $1) (snd $1) (snd $3)) }
   | Expr1 { (fst $1, (snd $1)) }
 
 Expr6 :: { (Abs.BNFC'Position, Abs.Expr) }
 Expr6
-  : LIdent { (fst $1, Abs.EId (fst $1) (snd $1)) }
+  : '[' ListExpr ']' { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.EList (uncurry Abs.BNFC'Position (tokenLineCol $1)) (snd $2)) }
+  | LIdent { (fst $1, Abs.EId (fst $1) (snd $1)) }
   | UIdent '.' UIdent { (fst $1, Abs.EConstr (fst $1) (snd $1) (snd $3)) }
   | '_' { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.EIgnore (uncurry Abs.BNFC'Position (tokenLineCol $1))) }
   | Expr6 '(' ListExpr ')' { (fst $1, Abs.EApp (fst $1) (snd $1) (snd $3)) }

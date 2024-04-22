@@ -195,7 +195,7 @@ instance Print (Abs.Expr' a) where
     Abs.EMatch _ expr matchbranchs -> prPrec i 0 (concatD [doc (showString "match"), prt 0 expr, doc (showString "with"), doc (showString "("), prt 0 matchbranchs, doc (showString ")")])
     Abs.EIf _ expr1 expr2 expr3 -> prPrec i 0 (concatD [doc (showString "if"), prt 0 expr1, doc (showString "then"), prt 0 expr2, doc (showString "else"), prt 0 expr3])
     Abs.ELambda _ args expr -> prPrec i 0 (concatD [doc (showString "fun"), doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "->"), prt 0 expr])
-    Abs.EList _ exprs -> prPrec i 0 (concatD [doc (showString "["), prt 0 exprs, doc (showString "]")])
+    Abs.EList _ exprs -> prPrec i 6 (concatD [doc (showString "["), prt 0 exprs, doc (showString "]")])
     Abs.EId _ lident -> prPrec i 6 (concatD [prt 0 lident])
     Abs.EConstr _ uident1 uident2 -> prPrec i 6 (concatD [prt 0 uident1, doc (showString "."), prt 0 uident2])
     Abs.EIgnore _ -> prPrec i 6 (concatD [doc (showString "_")])

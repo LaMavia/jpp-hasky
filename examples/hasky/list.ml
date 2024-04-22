@@ -12,22 +12,22 @@ type Bool
 empty :: (a) => Fun(List(a), Bool) 
   = fun (x List(a)) ->
     match x with (
-      | Nil -> True
-      | _   -> False
+      | List.Nil -> Bool.True
+      | _        -> Bool.False
     )
 ;;
 
 head :: (a) => Fun(List(a), a) 
   = fun (x List(a)) ->
     match x with (
-      | Cons (h, _) -> h
+      | List.Cons (h, _) -> h
     )
 ;;
 
 tail :: (a) => Fun(List(a), List(a))
   = fun (x List(a)) ->
     match x with (
-      | Cons(_, t) -> t
+      | List.Cons(_, t) -> t
     )
 ;;
 
@@ -35,7 +35,7 @@ tail :: (a) => Fun(List(a), List(a))
 isSingleton :: Fun(List(Int), Bool)
   = fun (xs List(Int)) ->
     match xs with (
-      | [_] -> True
-      |  _  -> False
+      | [_] -> Bool.True
+      |  _  -> Bool.False
     )
 ;;

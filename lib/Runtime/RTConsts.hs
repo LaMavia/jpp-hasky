@@ -20,3 +20,9 @@ rtOfBool :: Bool -> RTVal
 rtOfBool True  = rtcTrue
 rtOfBool False = rtcFalse
 
+
+pattern RTCVoid :: RTVal
+pattern RTCVoid <- RTConstr "Void" "Void" []
+
+rtcVoid :: RTVal
+rtcVoid = RTConstr "Void" "Void" []

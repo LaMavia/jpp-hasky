@@ -8,3 +8,7 @@ listMatch :: Fun(List(Int), Int)
     | [a, b] -> a + b
     )
 ;;
+
+x :: Void = print(listMatch([])) ;;
+y :: Void = print(listMatch([1])) ;;
+z :: Void = print(listMatch([10, 15])) ;;

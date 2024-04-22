@@ -102,7 +102,7 @@ ListLIdent
 Type :: { (Abs.BNFC'Position, Abs.Type) }
 Type
   : LIdent { (fst $1, Abs.TVar (fst $1) (snd $1)) }
-  | UIdent '.' UIdent '(' ListType ')' { (fst $1, Abs.TApp (fst $1) (snd $1) (snd $3) (snd $5)) }
+  | UIdent '(' ListType ')' { (fst $1, Abs.TApp (fst $1) (snd $1) (snd $3)) }
   | UIdent { (fst $1, Abs.TType (fst $1) (snd $1)) }
   | '(' ListLIdent ')' '=>' Type { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.TBound (uncurry Abs.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $5)) }
 

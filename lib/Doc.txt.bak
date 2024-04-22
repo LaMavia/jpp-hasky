@@ -34,8 +34,8 @@ The reserved words used in  are the following:
 
 The symbols used in  are the following:
   | ;; | ( | ) | =
-  | :: | | | , | .
-  | => | -> | [ | ]
+  | :: | | | , | =>
+  | -> | [ | ] | .
   | _ | - | ! | &&
   | || | + | * | /
   | % | < | <= | >
@@ -62,7 +62,7 @@ All other symbols are terminals.
   | //[LIdent]// | -> | //LIdent//
   |  |  **|**  | //LIdent// ``,`` //[LIdent]//
   | //Type// | -> | //LIdent//
-  |  |  **|**  | //UIdent// ``.`` //UIdent// ``(`` //[Type]// ``)``
+  |  |  **|**  | //UIdent// ``(`` //[Type]// ``)``
   |  |  **|**  | //UIdent//
   |  |  **|**  | ``(`` //[LIdent]// ``)`` ``=>`` //Type//
   | //[Type]// | -> | //Type//
