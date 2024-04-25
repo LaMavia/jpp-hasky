@@ -17,6 +17,7 @@ import           Preprocessor.Stdlib  (prependStdlib)
 import           Print                (printTree)
 import           Runtime              (runRT)
 import           Skel                 ()
+import           System.IO            (hPrint, hPutStrLn, stderr)
 
 type Err        = Either String
 type ParseFun   = [Token] -> Err Program
@@ -41,8 +42,8 @@ run v p s =
       let program = prependStdlib $ desugarProgram tree
       r <- runRT $ evalProgram program
       case r of
-        Left err      -> print err
-        Right (_, st) -> putStrLn "\n>>>>>>>>>>> STATE <<<<<<<<<<<<" >> print  st
+        Left err      -> hPrint stderr err
+        Right (_, st) -> hPutStrLn stderr "\n>>>>>>>>>>> STATE <<<<<<<<<<<<" >> print st
   where
   ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]
