@@ -11,3 +11,9 @@ tail_xs :: List (Int) =
     | List.Cons (_, tl) -> tl 
   ) 
 ;;
+
+main :: Void 
+  =  let _ :: Void = print(x)
+  in let _ :: Void = print(tail_xs)
+  in Void.Void()
+;;

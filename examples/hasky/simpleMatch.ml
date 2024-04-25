@@ -4,3 +4,5 @@ x :: Int =
     | z -> -z
   )
   ;;
+
+main :: Void = print(x) ;;

@@ -1,6 +1,6 @@
 sub :: Fun(Int, Int, Int)
   = fun (x Int, y Int) ->
-    let _ :: Void = print(x, y, Void.Void()) in
+    let _ :: Void = print([x, y]) in
     x - y
 ;;
 
