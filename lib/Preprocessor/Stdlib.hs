@@ -5,13 +5,14 @@ module Preprocessor.Stdlib where
 import           Abs                     (Program, Program' (Program), TopDef)
 import           Control.Exception       (Exception, throw)
 import           Control.Monad.IO.Class  (MonadIO (liftIO))
+import           Control.Monad.Reader    (MonadReader (ask))
 import           Data.Bifunctor          (Bifunctor (second))
 import           Data.Data               (Typeable)
 import           Data.String.Interpolate (i)
 import           Par                     (myLexer, pProgram)
 import           Preprocessor.Desugar    (desugarProgram)
 import           Runtime                 (RT, RTEnv, RTVal (RTFunc), alloc,
-                                          envSeq, rtcVoid)
+                                          envSeq, getVar, rtcVoid)
 
 newtype StdlibCompilationError = StdlibCompilationError String deriving (Show, Typeable)
 
@@ -88,5 +89,8 @@ runPrelude :: RT RTEnv
 runPrelude = do
   envSeq [defPrint]
   where
-    defPrint = alloc "print" $ RTFunc (\vs -> do mapM_ (liftIO . print) vs >> return rtcVoid)
+    defPrint = do
+      env <- ask
+      let f = RTFunc env ["x"] (do x <- getVar "x"; (liftIO . print) x >> return rtcVoid)
+      alloc "print" f
 

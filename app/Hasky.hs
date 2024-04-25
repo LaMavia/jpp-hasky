@@ -42,7 +42,7 @@ run v p s =
       r <- runRT $ evalProgram program
       case r of
         Left err      -> print err
-        Right (_, st) -> print st
+        Right (_, st) -> putStrLn "\n>>>>>>>>>>> STATE <<<<<<<<<<<<" >> print  st
   where
   ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]

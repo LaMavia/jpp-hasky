@@ -10,3 +10,5 @@ fact :: Fun(Int, Int) =
   ;;
 
 z :: Int = fact(5) ;;
+main :: Void = print(z) ;;
+

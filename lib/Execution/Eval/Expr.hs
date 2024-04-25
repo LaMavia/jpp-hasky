@@ -1,11 +1,12 @@
 {-# LANGUAGE QuasiQuotes   #-}
 {-# LANGUAGE TupleSections #-}
 
+
 module Execution.Eval.Expr where
 
 import           Abs
 import           Control.Monad.Except    (MonadError (throwError))
-import           Control.Monad.Reader    (MonadReader (local))
+import           Control.Monad.Reader    (MonadReader (ask, local))
 import           Data.Foldable           (Foldable (foldl'))
 import           Data.String.Interpolate (i)
 import           Execution.Eval.Literal  (evalLiteral)
@@ -32,6 +33,10 @@ evalExprImpl (Neg _ expr) = do
 
 evalExprImpl (EId _ (LIdent x)) =
   getVar x
+
+evalExprImpl (ELet _ (EId _ (LIdent name)) _ vexpr bexpr) = do
+  env' <- allocEnv name
+  local (const env') $ evalExpr vexpr >>= allocState name >> evalExpr bexpr
 
 evalExprImpl (ELet _ pat _ vexpr bexpr) = do
   v <- evalExpr vexpr
@@ -66,24 +71,22 @@ evalExprImpl (EMatch _ e cases) = do
           )
 
 evalExprImpl (EConstr _ (UIdent t) (UIdent c)) = do
-  -- RTData _ _ constrMap <- getVar t
-  -- let (Just constr) = Map.lookup c constrMap
   return $ RTConstr t c []
 
 evalExprImpl (EApp _ cexpr@(EConstr {}) argExprs) = do
-  RTConstr t c boundArgs <- evalExpr cexpr
-  newArgs <- mapM evalExpr argExprs
-  return $ RTConstr t c (boundArgs <> newArgs)
+  constr <- evalExpr cexpr
+  args <- mapM evalExpr argExprs
+  rtApply constr args
 
 evalExprImpl (EApp _ fexpr@(ELambda {}) argExprs) = do
-  RTFunc f <- evalExpr fexpr
+  func <- evalExpr fexpr
   args <- mapM evalExpr argExprs
-  f args
+  rtApply func args
 
 evalExprImpl (EApp _ iexpr@(EId {}) argExprs) = do
-  RTFunc f <- evalExpr iexpr
+  app <- evalExpr iexpr
   args <- mapM evalExpr argExprs
-  f args
+  rtApply app args
 
 evalExprImpl (EApp _ expr _) = rtThrow [i|Invalid caller expression '#{expr}'|]
 
@@ -140,10 +143,10 @@ evalExprImpl (EOr _ aexpr bexpr) = do
     RTCFalse -> evalExpr bexpr
     _        -> undefined
 
-evalExprImpl (ELambda _ fargs body) = return $ RTFunc f
+evalExprImpl (ELambda _ fargs body) = do
+  env <- ask
+  return $ RTFunc env argNames f
   where
     argNames = (\(Arg _ (LIdent x) _) -> x) <$> fargs
-    f args = do
-      env <- envSeq (zipWith alloc argNames args)
-      local (const env) (evalExpr body)
+    f = evalExpr body
 

@@ -5,4 +5,4 @@ add :: Fun(Int, Int, Int)
 
 add5 :: Fun(Int, Int) = add(5) ;;
 
-main :: Void = print(add5(10)) ;;
+main :: Void = print(add5(-1)) ;;

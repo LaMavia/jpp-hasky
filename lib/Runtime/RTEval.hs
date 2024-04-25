@@ -1,4 +1,5 @@
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DoAndIfThenElse #-}
+{-# LANGUAGE QuasiQuotes     #-}
 
 module Runtime.RTEval where
 
@@ -71,7 +72,7 @@ initialState = RTState {state=Map.empty, loc=0}
 data RTVal
   = RTInt !Integer
   | RTConstr !String !String ![RTVal]
-  | RTFunc !([RTVal] -> RT RTVal)
+  | RTFunc !RTEnv ![String] !(RT RTVal)
   | RTType !Type
   | -- | RTData TypeName [Arguments] { ConstrName: [ConstrArgs] }
     RTData !String ![String] !(Map.Map String DataConstr)
@@ -89,7 +90,8 @@ instance Show RTVal where
   show (RTInt n) = [i|#{n} :: Int|]
   show (RTConstr t n args) = [i|#{t}.#{n}(#{argStrings})|]
     where argStrings = intercalate ", " $ show <$> args
-  show (RTFunc _) = "<<function>>"
+  show (RTFunc _ args _) = [i|fun(#{argStrings})|]
+      where argStrings = intercalate ", " $ show <$> args
   show (RTData t args _) = [i|data #{t} (#{argStrings})|]
     where argStrings = intercalate ", " $ show <$> args
   show (RTType t) = show t
@@ -107,4 +109,20 @@ instance Show Type where
   show (TIdent t args) = [i|#{t}(#{argStrings})|]
       where argStrings = intercalate ", " $ show <$> args
   show TUniv = "$Type"
+
+rtApply :: RTVal -> [RTVal] -> RT RTVal
+rtApply (RTFunc env argNames f) args = do
+  let n = length argNames
+  let m = length args
+  env' <- local (const env) $ envSeq (zipWith alloc argNames args)
+  if n == m then -- best case
+    local (const env') f
+  else if n > m then -- curry
+    return $ RTFunc env' (drop m argNames) f
+  else -- apply to the result
+    do
+      res <- local (const env') f
+      rtApply res (drop n args)
+
+rtApply (RTConstr t c []) args = return $ RTConstr t c args
 
