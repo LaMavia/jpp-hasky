@@ -29,10 +29,10 @@ data RTError = RTError
 instance Show RTError where
   show (RTError {callstack, message}) =
     unlines
-      [ [i|Runtime error: '#{message}'.|],
+      [ [i|Runtime error: «#{message}».|],
         "Callstack:",
         unlines
-          [ [i|#{r}:#{c} at #{place}|]
+          [ [i|#{r}:#{c}\tat #{place}|]
             | ((r, c), place) <- callstackWithPos
           ]
       ]
@@ -73,7 +73,7 @@ placeOfTopDef x = case x of
      in (pos, [i|type #{name}|])
   Abs.TDDeclaration pos lident type_ _ ->
     let name = placeOfLIdent lident
-        typeAdnot = placeOfType type_
+        typeAdnot = snd $ placeOfType type_
      in (pos, [i|#{name} :: #{typeAdnot}|])
   Abs.TDDeclarationNT pos lident _ ->
     (pos, placeOfLIdent lident)
@@ -88,7 +88,7 @@ placeOfType x = case x of
   Abs.TType pos uident -> (pos, placeOfUIdent uident)
   Abs.TBound pos lidents type_ ->
     let vars = intercalate ", " $ placeOfLIdent <$> lidents
-        typeExpr = placeOfType type_
+        typeExpr = snd $ placeOfType type_
      in (pos, [i|(#{vars}) => #{typeExpr}|])
 
 placeOfConstructor :: (Show a) => Abs.Constructor' a -> (a, String)
