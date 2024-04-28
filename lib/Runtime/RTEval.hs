@@ -3,6 +3,7 @@
 
 module Runtime.RTEval where
 
+import           Control.Exception          (Exception, throw)
 import           Control.Monad.Reader       (MonadReader, ReaderT (runReaderT),
                                              ask, asks, local)
 import           Control.Monad.State        (StateT (runStateT), gets, modify)
@@ -116,6 +117,9 @@ instance Show Type where
       where argStrings = intercalate ", " $ show <$> args
   show TUniv = "$Type"
 
+newtype RTApplyException = RTApplyException { operator :: RTVal } deriving (Show)
+instance Exception RTApplyException
+
 rtApply :: RTVal -> [RTVal] -> RT RTVal
 rtApply (RTFunc env argNames f) args = do
   let n = length argNames
@@ -131,4 +135,6 @@ rtApply (RTFunc env argNames f) args = do
       rtApply res (drop n args)
 
 rtApply (RTConstr t c []) args = return $ RTConstr t c args
+
+rtApply x _ = throw $ RTApplyException {operator=x}
 
