@@ -22,7 +22,7 @@ function test_file
   set -l tmp_out_path "$out_path.tmp"
   set -l tmp_err_path "$err_path.tmp"
 
-
+  printf '%s...' $file_path
   cabal run hasky < "$file_path" 1> $tmp_out_path 2> $tmp_err_path
 
   if test $test_state -ne 0
@@ -38,15 +38,21 @@ function test_file
   end
 
   diff "$out_path" "$tmp_out_path"
-  if test ! $status
-      printf 'Invalid stdout\n'
-      exit 1
+  if test $status -ne 0
+    set_color red
+    printf 'Invalid stdout\n'
+    set_color normal
+
+    return 1
   end
 
   diff "$err_path" "$tmp_err_path"
-  if test ! $status
-      printf 'Invalid stderr\n'
-      exit 1
+  if test $status -ne 0
+    set_color red
+    printf 'Invalid stderr\n'
+    set_color normal
+
+    return 1
   end
 
   rm $tmp_out_path
@@ -59,15 +65,20 @@ function main
   printf '\n\n'
 
   for file in examples/hasky/**/*.ml
-    echo "running $file"
     test_file $file
 
     if test $status -eq 0
-      printf "%s\t OK\n" $file
+      set_color green
+      printf " OK\n"
     else
-      printf "%s\t ERROR\n" $file
+      set_color red
+      printf "ERROR\n"
     end
+    set_color normal
   end
+  
+  set -l tmps examples/hasky/**/*.tmp
+  rm -f $tmps
 end
 
 main 
