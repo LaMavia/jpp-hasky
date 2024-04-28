@@ -1,0 +1,2 @@
+List.Cons(1 :: Int, List.Cons(2 :: Int, List.Cons(3 :: Int, List.Nil())))
+Void.Void()

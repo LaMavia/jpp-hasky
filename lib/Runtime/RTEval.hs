@@ -46,6 +46,12 @@ getVar key = do
   v <- gets (Map.lookup l . state)
   maybe (rtThrow [i|getVar: Key '#{key}' (#{l})|]) return v
 
+withFrame :: RT a -> RT a
+withFrame m = do
+  i0 <- gets loc
+  res <- m
+  modify (\s -> s {loc = i0})
+  return res
 
 envSeq :: (MonadReader r m) => [m r] -> m r
 envSeq actions = do

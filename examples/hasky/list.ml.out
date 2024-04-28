@@ -1,0 +1,4 @@
+List.Cons(Bool.True(), List.Cons(Bool.False(), List.Nil()))
+List.Cons(1 :: Int, List.Nil())
+List.Cons(List.Cons(2 :: Int, List.Cons(3 :: Int, List.Nil())), List.Nil())
+List.Cons(Bool.False(), List.Cons(Bool.True(), List.Nil()))

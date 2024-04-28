@@ -1,0 +1,9 @@
+Runtime error: «getLoc: Key 'x' is not defined in the current env.».
+Callstack:
+1:1	at <<program>>
+1:1	at main :: Void
+2:3	at let _ :: Void 
+3:6	at print(x)
+3:12	at x
+
+

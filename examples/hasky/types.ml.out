@@ -1,0 +1,1 @@
+Tree.Node(Tree.Node(Tree.Leaf(), 2 :: Int, Tree.Leaf()), 4 :: Int, Tree.Node(Tree.Leaf(), 6 :: Int, Tree.Leaf()))

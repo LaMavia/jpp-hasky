@@ -1,0 +1,9 @@
+Runtime error: «getLoc: Key 'secret' is not defined in the current env.».
+Callstack:
+1:1	at <<program>>
+5:1	at main :: Void
+6:5	at let adder :: Fun(Int, Int) 
+6:43	at print(secret)
+6:49	at secret
+
+

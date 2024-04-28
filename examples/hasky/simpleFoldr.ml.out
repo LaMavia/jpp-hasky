@@ -1,0 +1,4 @@
+List.Cons(4 :: Int, List.Cons(1 :: Int, List.Nil()))
+List.Cons(3 :: Int, List.Cons(3 :: Int, List.Nil()))
+List.Cons(2 :: Int, List.Cons(0 :: Int, List.Nil()))
+2 :: Int
