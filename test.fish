@@ -24,6 +24,10 @@ function test_file
 
 
   cabal run hasky < "$file_path" 1> $tmp_out_path 2> $tmp_err_path
+
+  if test $test_state -ne 0
+    sed -i -n '/STATE/q;p' $tmp_err_path
+  end
  
   if test \( ! -f "$out_path" \) -o \( $override -eq 0 \)
     cp -f "$tmp_out_path" "$out_path"

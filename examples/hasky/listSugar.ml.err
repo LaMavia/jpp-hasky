@@ -1,3 +1,1 @@
 
->>>>>>>>>>> STATE <<<<<<<<<<<<
-RTState {state = fromList [(0,fun("x")),(1,data Bool ()),(2,data Void ()),(3,data List ("a")),(4,data Maybe ("a")),(5,fun("xs")),(6,fun("xs")),(7,fun("xs")),(8,fun("f", "xs")),(9,fun("f", "u0", "xs")),(10,List.Cons(1 :: Int, List.Cons(2 :: Int, List.Cons(3 :: Int, List.Cons(4 :: Int, List.Nil()))))),(11,fun("xs")),(12,Void.Void()),(13,List.Nil()),(14,0 :: Int),(15,Void.Void()),(16,List.Cons(1 :: Int, List.Nil())),(17,1 :: Int),(18,1 :: Int),(19,Void.Void()),(20,List.Cons(10 :: Int, List.Cons(15 :: Int, List.Nil()))),(21,10 :: Int),(22,15 :: Int),(23,25 :: Int)], loc = 24}
