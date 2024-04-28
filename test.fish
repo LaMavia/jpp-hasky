@@ -72,7 +72,7 @@ function main
       printf " OK\n"
     else
       set_color red
-      printf "ERROR\n"
+      printf " ERROR\n"
     end
     set_color normal
   end
