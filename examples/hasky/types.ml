@@ -8,7 +8,7 @@ map_tree :: (a, b) => Fun(Fun(a, b), Tree(a), Tree(b))
     match tree with (
     | Tree.Leaf() -> Tree.Leaf()
     | Tree.Node( l, x, r ) -> 
-      let m :: Tree(b) = map_tree(f)
+      let m :: Fun(Tree(a), Tree(b)) = map_tree(f)
       in Tree.Node ( m(l), f(x), m(r) )
     )
 ;;
