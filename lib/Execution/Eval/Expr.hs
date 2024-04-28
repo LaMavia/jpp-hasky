@@ -34,7 +34,7 @@ evalExprImpl (Neg _ expr) = do
 evalExprImpl (EId _ (LIdent x)) =
   getVar x
 
-evalExprImpl (ELet _ (EId _ (LIdent name)) _ vexpr bexpr) = do
+evalExprImpl (ELet _ (EId _ (LIdent name)) _ vexpr bexpr) = withFrame $ do
   env' <- allocEnv name
   local (const env') $ evalExpr vexpr >>= allocState name >> evalExpr bexpr
 
@@ -81,7 +81,7 @@ evalExprImpl (EApp _ cexpr@(EConstr {}) argExprs) = do
 evalExprImpl (EApp _ fexpr@(ELambda {}) argExprs) = do
   func <- evalExpr fexpr
   args <- mapM evalExpr argExprs
-  rtApply func args
+  withFrame $ rtApply func args
 
 evalExprImpl (EApp _ iexpr@(EId {}) argExprs) = do
   app <- evalExpr iexpr
