@@ -1,7 +1,8 @@
 module Execution.Eval.Literal where
 import           Abs     (Literal, Literal' (LInt))
-import           Runtime (RT, RTVal (RTInt), placeOfLiteral, rtCatch)
+import           Common  (placeOfLiteral, uCatch)
+import           Runtime (RT, RTVal (RTInt))
 
 evalLiteral :: Literal -> RT RTVal
 evalLiteral l@(LInt _ n) =
-  rtCatch (placeOfLiteral l) (return $ RTInt n)
+  uCatch (placeOfLiteral l) (return $ RTInt n)

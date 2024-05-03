@@ -4,6 +4,7 @@
 module Execution.Unification where
 
 import           Abs
+import           Common
 import           Control.Monad           (zipWithM)
 import qualified Data.Map.Strict         as Map
 import           Data.String.Interpolate (i)
@@ -23,7 +24,7 @@ singleton = Map.singleton
 -- WAS Prelude.foldr1: empty list
 -- NOW Right (fromList [])
 
-unify :: Expr -> RTVal -> RTResult Unifier
+unify :: Expr -> RTVal -> UResult Unifier
 unify (EIgnore _) _ = return empty
 unify (EId _ (LIdent x)) v = return $ singleton x v
 unify (EApp _ (EConstr _ (UIdent tx) (UIdent x)) args) (RTConstr ty y vs)
@@ -35,7 +36,7 @@ unify (ELit _ (LInt _ p)) (RTInt n)
   | fromInteger p == n = return empty
 unify p v =
   Left
-    ( rtError
+    ( uError
         (placeOfExpr p)
         [i|Cannot match the pattern #{pText} with value #{vText}|]
     )

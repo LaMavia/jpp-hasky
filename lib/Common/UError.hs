@@ -3,7 +3,7 @@
 {-# LANGUAGE QuasiQuotes      #-}
 {-# LANGUAGE StrictData       #-}
 
-module Runtime.RTError where
+module Common.UError where
 
 import           Abs                       (AddOp' (..), Arg' (..),
                                             BNFC'Position, Constructor' (..),
@@ -19,17 +19,17 @@ import           Data.String.Interpolate   (i)
 
 type CallstackEntry = (BNFC'Position, String)
 
-type RTResult = Either RTError
+type UResult = Either UError
 
-data RTError = RTError
+data UError = UError
   { callstack :: ![CallstackEntry],
     message   :: !String
   }
 
-instance Show RTError where
-  show (RTError {callstack, message}) =
+instance Show UError where
+  show (UError {callstack, message}) =
     unlines
-      [ [i|Runtime error: «#{message}».|],
+      [ [i|Error: «#{message}».|],
         "Callstack:",
         unlines
           [ [i|#{r}:#{c}\tat #{place}|]
@@ -39,14 +39,14 @@ instance Show RTError where
     where
       callstackWithPos = first (maybe ("?", "?") (bimap show show)) <$> callstack
 
-rtThrow :: (MonadError RTError m) => String -> m a
-rtThrow m = throwError $ RTError {callstack = [], message = m}
+uThrow :: (MonadError UError m) => String -> m a
+uThrow m = throwError $ UError {callstack = [], message = m}
 
-rtError :: CallstackEntry -> String -> RTError
-rtError e m = RTError {callstack = [e], message = m}
+uError :: CallstackEntry -> String -> UError
+uError e m = UError {callstack = [e], message = m}
 
-rtCatch :: (MonadError RTError m) => CallstackEntry -> m a -> m a
-rtCatch entry m = catchError m aux
+uCatch :: (MonadError UError m) => CallstackEntry -> m a -> m a
+uCatch entry m = catchError m aux
   where
     aux e = throwError $ e {callstack = entry : callstack e}
 

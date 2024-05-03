@@ -1,6 +1,7 @@
 module Execution.Eval.TopDef where
 
 import           Abs
+import           Common
 import           Control.Monad.Reader        (MonadReader (local))
 import qualified Data.Map.Strict             as Map
 import           Execution.Eval.Expr         (evalExpr)
@@ -14,7 +15,7 @@ dataEntryOfConstructor (Constructor _ (UIdent name) args) =
 dataEntryOfConstructor (NullaryConstr _ (UIdent name)) = (name, DConstr [])
 
 evalTopDef :: TopDef -> RT RTEnv
-evalTopDef p = rtCatch (placeOfTopDef p) $ evalTopDefImpl p
+evalTopDef p = uCatch (placeOfTopDef p) $ evalTopDefImpl p
 
 evalTopDefImpl :: TopDef -> RT RTEnv
 evalTopDefImpl (TDDataV _ (UIdent dataName) args constrs) = do
@@ -23,10 +24,10 @@ evalTopDefImpl (TDDataV _ (UIdent dataName) args constrs) = do
   alloc dataName (RTData dataName (stringOfLident <$> args) constructorMap)
 
 evalTopDefImpl (TDDataNV {}) =
-  rtThrow "unexpected non-generic data declaration"
+  uThrow "unexpected non-generic data declaration"
 
 evalTopDefImpl (TDDeclarationNT {}) =
-  rtThrow "unexpected typeless top definition"
+  uThrow "unexpected typeless top definition"
 
 evalTopDefImpl (TDDeclaration _ (LIdent name) _ e) = do
   env' <- allocEnv name

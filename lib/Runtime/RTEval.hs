@@ -3,21 +3,20 @@
 
 module Runtime.RTEval where
 
+import           Common
 import           Control.Exception          (Exception, throw)
-import           Control.Monad.Reader       (MonadReader, ReaderT (runReaderT),
-                                             ask, asks, local)
+import           Control.Monad.Reader       (ReaderT (runReaderT), ask, asks,
+                                             local)
 import           Control.Monad.State        (StateT (runStateT), gets, modify)
 import           Control.Monad.Trans.Except (ExceptT, runExceptT)
-import           Data.Foldable              (foldlM)
 import           Data.List                  (intercalate)
 import qualified Data.Map.Strict            as Map
 import           Data.String.Interpolate    (i)
-import           Runtime.RTError            (RTError, rtThrow)
 
 
-type RT = ReaderT RTEnv (StateT RTState (ExceptT RTError IO))
+type RT = ReaderT RTEnv (StateT RTState (ExceptT UError IO))
 
-runRT :: RT a -> IO (Either RTError (a, RTState))
+runRT :: RT a -> IO (Either UError (a, RTState))
 runRT m = runExceptT (runStateT (runReaderT m initialEnv) initialState)
 
 type RTEval a b = a -> RT b
@@ -39,13 +38,13 @@ alloc key val = envSeq [allocEnv key, allocState key val >> ask]
 getLoc :: String -> RT Location
 getLoc key = do
   l <- asks (Map.lookup key)
-  maybe (rtThrow [i|getLoc: Key '#{key}' is not defined in the current env.|]) return l
+  maybe (uThrow [i|getLoc: Key '#{key}' is not defined in the current env.|]) return l
 
 getVar :: String -> RT RTVal
 getVar key = do
   l <- getLoc key
   v <- gets (Map.lookup l . state)
-  maybe (rtThrow [i|getVar: Key '#{key}' (#{l})|]) return v
+  maybe (uThrow [i|getVar: Key '#{key}' (#{l})|]) return v
 
 withFrame :: RT a -> RT a
 withFrame m = do
@@ -53,11 +52,6 @@ withFrame m = do
   res <- m
   modify (\s -> s {loc = i0})
   return res
-
-envSeq :: (MonadReader r m) => [m r] -> m r
-envSeq actions = do
-  s0 <- ask
-  foldlM (local . const) s0 actions
 
 
 type Location = Integer

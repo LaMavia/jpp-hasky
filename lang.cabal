@@ -93,8 +93,7 @@ library lib
                     , Execution.Eval
                     , Execution.Unification
 
-   other-modules:     Runtime.RTError
-                    , Runtime.RTEval
+   other-modules:     Runtime.RTEval
                     , Runtime.RTConsts
                     , Execution.Eval.Program
                     , Execution.Eval.TopDef
@@ -104,4 +103,7 @@ library lib
                     , TypeChecker.Utils
                     , TypeChecker.Utils.FreeVars
                     , TypeChecker.Utils.BoundVars
+                    , Common
+                    , Common.UError
+                    , Common.Utils
 

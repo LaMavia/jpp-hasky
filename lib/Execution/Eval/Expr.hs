@@ -12,10 +12,11 @@ import           Data.String.Interpolate (i)
 import           Execution.Eval.Literal  (evalLiteral)
 import           Execution.Unification   (applyUnifier, unify)
 import           Runtime
+import Common
 
 
 evalExpr :: Expr -> RT RTVal
-evalExpr e = rtCatch (placeOfExpr e) (evalExprImpl e)
+evalExpr e = uCatch (placeOfExpr e) (evalExprImpl e)
 
 evalExprImpl :: Expr -> RT RTVal
 evalExprImpl (ELit _ lit) = evalLiteral lit
@@ -65,7 +66,7 @@ evalExprImpl (EMatch _ e cases) = do
     findUnificableBranch val =
       foldl' (\u (MBBranch _ cond bexpr) ->
         u <> ((, bexpr) <$> unify cond val))
-        (Left $ rtError
+        (Left $ uError
           (placeOfExpr e)
             "value not unifiable with any of the branches"
           )
@@ -88,7 +89,7 @@ evalExprImpl (EApp _ iexpr@(EId {}) argExprs) = do
   args <- mapM evalExpr argExprs
   rtApply app args
 
-evalExprImpl (EApp _ expr _) = rtThrow [i|Invalid caller expression '#{expr}'|]
+evalExprImpl (EApp _ expr _) = uThrow [i|Invalid caller expression '#{expr}'|]
 
 
 evalExprImpl (EMul _ aexpr op bexpr) = do
@@ -97,7 +98,7 @@ evalExprImpl (EMul _ aexpr op bexpr) = do
   let r = return . RTInt
   case op of
     Times _        -> r $ a * b
-    Div _ | b == 0 -> rtThrow "division by 0"
+    Div _ | b == 0 -> uThrow "division by 0"
     Div _          -> r $ a `div` b
     Mod _          -> r $ a `mod` b
 

@@ -1,4 +1,4 @@
-Runtime error: «getLoc: Key 'secret' is not defined in the current env.».
+Error: «getLoc: Key 'secret' is not defined in the current env.».
 Callstack:
 1:1	at <<program>>
 5:1	at main :: Void

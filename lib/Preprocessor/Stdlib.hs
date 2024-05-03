@@ -3,6 +3,7 @@
 module Preprocessor.Stdlib where
 
 import           Abs                     (Program, Program' (Program), TopDef)
+import           Common                  (envSeq)
 import           Control.Exception       (Exception, throw)
 import           Control.Monad.IO.Class  (MonadIO (liftIO))
 import           Control.Monad.Reader    (MonadReader (ask))
@@ -12,7 +13,7 @@ import           Data.String.Interpolate (i)
 import           Par                     (myLexer, pProgram)
 import           Preprocessor.Desugar    (desugarProgram)
 import           Runtime                 (RT, RTEnv, RTVal (RTFunc), alloc,
-                                          envSeq, getVar, rtcVoid)
+                                          getVar, rtcVoid)
 
 newtype StdlibCompilationError = StdlibCompilationError String deriving (Show, Typeable)
 
