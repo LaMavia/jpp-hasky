@@ -9,5 +9,6 @@ not :: Fun (Bool, Bool)
   ;;
 
 main :: Void 
-= print([not(Bool.True()), not(Bool.False())])
+  = print([not(Bool.True()), not(Bool.False())])
 ;;
+

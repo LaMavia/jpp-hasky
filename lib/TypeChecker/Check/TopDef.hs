@@ -10,6 +10,7 @@ import           Control.Monad                 (mapAndUnzipM, when)
 import qualified Data.Map                      as Map
 import qualified Data.Set                      as Set
 import           Data.String.Interpolate       (i)
+import           Debug.Trace                   (traceShowId)
 import           TypeChecker.Check.Constructor (typeCheckConstructor)
 import           TypeChecker.Check.Expr        (typeCheckExpr)
 import           TypeChecker.Check.Type        (typeCheckType)
@@ -39,7 +40,7 @@ typeCheckTopDefImpl td@(TDDataV pos (UIdent t) _ constructors) = do
     guardDuplicateConstructors :: [(String, a)] -> TC ()
     guardDuplicateConstructors dataConstructorEntries = do
       let duplicateConstructors = findDuplicates $ fst <$> dataConstructorEntries
-      let hasDuplicateConstructors = null duplicateConstructors
+      let hasDuplicateConstructors = not $ null duplicateConstructors
       let duplicateConstrcutorString = showSepList ", " duplicateConstructors
       when hasDuplicateConstructors (uThrow [i|Type #{t} has duplicate constructors #{duplicateConstrcutorString}|])
 

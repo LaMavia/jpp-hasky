@@ -58,6 +58,8 @@ executable hasky
     main-is:          Hasky.hs
     build-depends:    base ^>=4.17.2.1
                     , array ^>= 0.5.4.0  
+                    , string-interpolate ^>= 0.3.3.0
+                    , ansi-terminal ^>= 0.6.2.3
                     , lib
     hs-source-dirs:   app
     default-language: Haskell2010
@@ -65,7 +67,7 @@ executable hasky
 executable test
     import:           warnings
     main-is:          Test.hs
-    build-depends:    base ^>=4.17.2.1
+    build-depends:    base ^>= 4.17.2.1
                     , array ^>= 0.5.4.0  
                     , lib
     hs-source-dirs:   test

@@ -10,7 +10,7 @@ import           Control.Monad.Reader    (MonadReader (ask, local),
                                           ReaderT (runReaderT), asks)
 import           Control.Monad.State     (StateT (runStateT), gets, modify)
 import           Data.Foldable           (foldlM)
-import           Data.List               (intercalate)
+import           Data.List               (intercalate, intersperse)
 import qualified Data.Map.Strict         as Map
 import           Data.String.Interpolate (i)
 
@@ -46,10 +46,9 @@ instance Show Type where
   show TCAny = "@Any"
   show (TCApp t ts) =
     let tsString = showSepList ", " ts in [i|#{t}(#{tsString})|]
-  show (TCData t args dataMap _) =
-    let argsString = showSepList ", " args
-        constructorsString = intercalate " | " [ [i|#{c}(#{tsString})|] | (c, ts) <- Map.toList dataMap, let tsString = showSepList ", " ts ]
-    in [i|data #{t}(#{argsString}) = #{constructorsString}|]
+  show (TCData t args _ _) =
+    let argsString = intercalate ", " args
+    in [i|#{t}(#{argsString})|]
 
 
 type TC = ReaderT TCEnv (StateT TCState (ExceptT UError Identity))
@@ -102,7 +101,7 @@ mapTCEnv :: TCChecker a TCEnv -> TCChecker [a] TCEnv
 mapTCEnv c ins = do
   env <- ask
   (env', outs) <- foldlM aux (env, []) (c <$> ins)
-  return (env', outs)
+  return (env', reverse outs)
   where
     aux :: (TCEnv, [a]) -> TC (TCEnv, a) -> TC (TCEnv, [a])
     aux (env, us) m = do

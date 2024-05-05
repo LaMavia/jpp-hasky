@@ -28,7 +28,7 @@ typeCheckTypeImpl (Abs.TApp pos (Abs.UIdent t) ts) = do
     (TCData _ _ _ c) | c tsTypes ->
       return (TCApp t tsTypes, Abs.TApp pos (Abs.UIdent t) ts')
     _ ->
-      let tsString = showSepList ", " ts
+      let tsString = showSepList ", " tsTypes
       in uThrow [i|Types «#{tsString}» are not applicable to «#{d}»|]
 
 typeCheckTypeImpl t@(Abs.TType _ (Abs.UIdent name)) = do
