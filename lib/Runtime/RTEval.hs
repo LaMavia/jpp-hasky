@@ -19,8 +19,6 @@ type RT = ReaderT RTEnv (StateT RTState (ExceptT UError IO))
 runRT :: RT a -> IO (Either UError (a, RTState))
 runRT m = runExceptT (runStateT (runReaderT m initialEnv) initialState)
 
-type RTEval a b = a -> RT b
-
 allocEnv :: String -> RT RTEnv
 allocEnv key = do
   l <- gets loc

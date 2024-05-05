@@ -92,6 +92,7 @@ library lib
                     , Preprocessor.Stdlib
                     , Execution.Eval
                     , Execution.Unification
+                    , TypeChecker
 
    other-modules:     Runtime.RTEval
                     , Runtime.RTConsts
@@ -103,6 +104,13 @@ library lib
                     , TypeChecker.Utils
                     , TypeChecker.Utils.FreeVars
                     , TypeChecker.Utils.BoundVars
+                    , TypeChecker.Utils.Unify
+                    , TypeChecker.TC 
+                    , TypeChecker.Check.Program
+                    , TypeChecker.Check.TopDef
+                    , TypeChecker.Check.Type
+                    , TypeChecker.Check.Constructor
+                    , TypeChecker.Check.Expr
                     , Common
                     , Common.UError
                     , Common.Utils

@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase  #-}
 {-# LANGUAGE QuasiQuotes #-}
 
 module Preprocessor.Stdlib where
@@ -9,11 +10,15 @@ import           Control.Monad.IO.Class  (MonadIO (liftIO))
 import           Control.Monad.Reader    (MonadReader (ask))
 import           Data.Bifunctor          (Bifunctor (second))
 import           Data.Data               (Typeable)
+import qualified Data.Map.Strict         as Map
 import           Data.String.Interpolate (i)
 import           Par                     (myLexer, pProgram)
 import           Preprocessor.Desugar    (desugarProgram)
 import           Runtime                 (RT, RTEnv, RTVal (RTFunc), alloc,
                                           getVar, rtcVoid)
+import qualified TypeChecker.TC          as TC
+import           TypeChecker.TC          (TC, TCEnv,
+                                          Type (TCApp, TCBound, TCData, TCVar))
 
 newtype StdlibCompilationError = StdlibCompilationError String deriving (Show, Typeable)
 
@@ -85,6 +90,20 @@ definableStdlib =
 
 prependStdlib :: Program -> Program
 prependStdlib (Program pos stmts) = Program pos (definableStdlib <> stmts)
+
+runTypePrelude :: TC TCEnv
+runTypePrelude = do
+  envSeq [decFun, defPrint]
+  where
+    defPrint =
+      -- print :: (a) => Fun(a, Void())
+      let f = TCBound ["a"] $ TCApp "Fun" [TCVar "a", TCApp "Void" []]
+      in TC.alloc "print" f
+    decFun =
+      -- Don't allow for `Fun()` or `Fun(a)`.
+      -- The latter should have been replaced with `a` during typechecking.
+      let fun = TCData "Fun" [] Map.empty (\case _:_:_ -> True; _ -> False)
+      in TC.alloc "Fun" fun
 
 runPrelude :: RT RTEnv
 runPrelude = do

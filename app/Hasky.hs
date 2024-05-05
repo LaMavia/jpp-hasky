@@ -1,10 +1,10 @@
 module Main where
 
-import           Control.Monad        (when)
+import           Control.Monad        (MonadFail (fail), when)
 import           Prelude              (Either (..), FilePath, IO, Int, String,
-                                       concat, getContents, mapM_, print,
-                                       putStrLn, readFile, show, ($), (++), (.),
-                                       (>), (>>), (>>=))
+                                       concat, fst, getContents, mapM_,
+                                       putStrLn, readFile, return, show, snd,
+                                       ($), (++), (.), (<$>), (>), (>>), (>>=))
 import           System.Environment   (getArgs)
 import           System.Exit          (exitFailure)
 
@@ -18,6 +18,7 @@ import           Print                (printTree)
 import           Runtime              (runRT)
 import           Skel                 ()
 import           System.IO            (hPrint, hPutStrLn, stderr)
+import           TypeChecker          (runTC, typeCheckProgram)
 
 type Err        = Either String
 type ParseFun   = [Token] -> Err Program
@@ -40,10 +41,14 @@ run v p s =
       exitFailure
     Right tree -> do
       let program = prependStdlib $ desugarProgram tree
-      r <- runRT $ evalProgram program
-      case r of
+      let tcResult = runTC $ typeCheckProgram program
+      case tcResult of
         Left err      -> hPrint stderr err
-        Right (_, st) -> hPutStrLn stderr "\n>>>>>>>>>>> STATE <<<<<<<<<<<<" >> hPrint stderr st
+        Right ((_, program'), _) -> do
+          r <- runRT $ evalProgram program'
+          case r of
+            Left err      -> hPrint stderr err
+            Right (_, st) -> hPutStrLn stderr "\n>>>>>>>>>>> STATE <<<<<<<<<<<<" >> hPrint stderr st
   where
   ts = myLexer s
   showPosToken ((l,c),t) = concat [ show l, ":", show c, "\t", show t ]
