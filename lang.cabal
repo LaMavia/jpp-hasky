@@ -108,11 +108,13 @@ library lib
                     , TypeChecker.Utils.BoundVars
                     , TypeChecker.Utils.Unify
                     , TypeChecker.TC 
+                    , TypeChecker.TCConsts
                     , TypeChecker.Check.Program
                     , TypeChecker.Check.TopDef
                     , TypeChecker.Check.Type
                     , TypeChecker.Check.Constructor
                     , TypeChecker.Check.Expr
+                    , TypeChecker.Check.Arg
                     , Common
                     , Common.UError
                     , Common.Utils
