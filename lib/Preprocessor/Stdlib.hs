@@ -97,7 +97,7 @@ runTypePrelude = do
   where
     defPrint =
       -- print :: (a) => Fun(a, Void())
-      let f = TCBound ["a"] $ TCApp "Fun" [TCVar "a", TCApp "Void" []]
+      let f = TCBound ["a"] (TCApp "Fun" [TCVar "a", TCApp "Void" []])
       in TC.alloc "print" f
     decFun =
       -- Don't allow for `Fun()` or `Fun(a)`.

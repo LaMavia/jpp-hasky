@@ -35,11 +35,12 @@ The reserved words used in  are the following:
 The symbols used in  are the following:
   | ;; | ( | ) | =
   | :: | | | , | =>
-  | -> | [ | ] | .
-  | _ | - | ! | &&
-  | || | + | * | /
-  | % | < | <= | >
-  | >= | == | != |
+  | -> | [ | ] | {
+  | } | . | _ | -
+  | ! | && | || | +
+  | * | / | % | <
+  | <= | > | >= | ==
+  | != |  |  |
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with (* and *).
@@ -75,11 +76,11 @@ All other symbols are terminals.
   |  |  **|**  | ``match`` //Expr// ``with`` ``(`` //[MatchBranch]// ``)``
   |  |  **|**  | ``if`` //Expr// ``then`` //Expr// ``else`` //Expr//
   |  |  **|**  | ``fun`` ``(`` //[Arg]// ``)`` ``->`` //Expr//
-  |  |  **|**  | ``[`` //[Expr]// ``]``
   |  |  **|**  | //Expr1// ``||`` //Expr//
   |  |  **|**  | //Expr1//
-  | //Expr6// | -> | //LIdent//
-  |  |  **|**  | //UIdent// ``.`` //UIdent//
+  | //Expr6// | -> | ``[`` //[Expr]// ``]``
+  |  |  **|**  | //LIdent//
+  |  |  **|**  | //UIdent// ``{`` //[Type]// ``}`` ``.`` //UIdent//
   |  |  **|**  | ``_``
   |  |  **|**  | //Expr6// ``(`` //[Expr]// ``)``
   |  |  **|**  | //Literal//

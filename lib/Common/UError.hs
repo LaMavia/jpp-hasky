@@ -29,7 +29,7 @@ data UError = UError
 instance Show UError where
   show (UError {callstack, message}) =
     unlines
-      [ [i|Error: «#{message}».|],
+      [ [i|Error: #{message}|],
         "Callstack:",
         unlines
           [ [i|#{r}:#{c}\tat #{place}|]

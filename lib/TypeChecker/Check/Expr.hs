@@ -2,21 +2,24 @@
 
 module TypeChecker.Check.Expr where
 import qualified Abs
-import           Common                  (envSeq, placeOfExpr, showSepList,
-                                          uCatch, uThrow, withEnv)
-import           Control.Monad           (mapAndUnzipM, when)
-import qualified Data.Foldable           as F
-
-import qualified Data.Map                as Map
-import qualified Data.Set                as Set
-import           Data.String.Interpolate (i)
-import           Print                   (Print (prt), render)
-import           TypeChecker.Check.Arg   (typeCheckArg)
-import           TypeChecker.Check.Type  (typeCheckType)
-import           TypeChecker.TC          (TCChecker, Type (TCData), alloc,
-                                          astOfType, getVar)
-import           TypeChecker.TCConsts    (tccAnyAst, tccBool, tccFun)
-import           TypeChecker.Utils       (bvOfType)
+import           Common                    (envSeq, placeOfExpr, showSepList,
+                                            uCatch, uThrow, withEnv)
+import           Control.Monad             (mapAndUnzipM, when, zipWithM)
+import           Data.Foldable             (foldlM, foldrM)
+import qualified Data.Map                  as Map
+import qualified Data.Set                  as Set
+import           Data.String.Interpolate   (i)
+import           Print                     (Print (prt), render)
+import           TypeChecker.Check.Arg     (typeCheckArg)
+import           TypeChecker.Check.Type    (typeCheckType)
+import           TypeChecker.TC            (TCChecker,
+                                            Type (TCAny, TCApp, TCData, TCVar),
+                                            alloc, astOfType, getVar)
+import           TypeChecker.TCConsts      (tccAnyAst, tccBool, tccFun)
+import           TypeChecker.Utils         (bvOfType, combineUnifiers,
+                                            stringOfLident, tcFVOfType)
+import           TypeChecker.Utils.Replace (replace)
+import           TypeChecker.Utils.Unify   ((<~))
 
 
 typeCheckExpr :: TCChecker Abs.Expr Type
@@ -64,16 +67,24 @@ typeCheckExprImpl e@(Abs.EId _ (Abs.LIdent x)) = do
 typeCheckExprImpl e@(Abs.EConstr _ (Abs.UIdent t) (Abs.UIdent c)) = do
   d <- getVar t
   case d of
-    TCData _ argIdents dataMap check | c `Map.member` dataMap ->
+    TCData _ argIdents dataMap _ | c `Map.member` dataMap -> do
+      {-
+       - data T(a, b, c) = A(a, List(b)) | C(c) ;;
+       - x = T.A(1, [Bool.True()]) ;; => x :: T(Int, Bool, Any) = ... ;;
+       - y = T.C(0) ;;                => y :: T(Any, Any, Int) = ... ;;
+       - -}
       let cArgs = dataMap Map.! c
-      in let boundVars = foldl (\u t -> u `Set.union` (bvOfType t)) Set.empty cArgs
-      in
-      _a
+      let bvs = Set.fromList argIdents
+      let avs = Set.unions $ tcFVOfType Set.empty <$> cArgs
+      let leftVs = bvs `Set.difference` avs
+      x <- replace leftVs $ TCApp t $ TCVar <$> Set.toList avs
+      return (x, e)
     TCData _ _ dataMap _ ->
       let constrString = showSepList " | " $ Map.keys dataMap
       in uThrow [i|«#{t}.#{c}» is not a constructor of type «#{t}». Available constructors: #{constrString}.|]
     _ ->
       uThrow [i|«#{t}» is not a type.|]
 
+typeCheckExprImpl e = return (TCAny, e)
   -- when (c `Map.notMember` )
 

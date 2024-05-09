@@ -57,8 +57,10 @@ import Lex
   'then'   { PT _ (TS _ 32)    }
   'type'   { PT _ (TS _ 33)    }
   'with'   { PT _ (TS _ 34)    }
-  '|'      { PT _ (TS _ 35)    }
-  '||'     { PT _ (TS _ 36)    }
+  '{'      { PT _ (TS _ 35)    }
+  '|'      { PT _ (TS _ 36)    }
+  '||'     { PT _ (TS _ 37)    }
+  '}'      { PT _ (TS _ 38)    }
   L_integ  { PT _ (TI _)       }
   L_LIdent { PT _ (T_LIdent _) }
   L_UIdent { PT _ (T_UIdent _) }
@@ -126,14 +128,14 @@ Expr
   | 'match' Expr 'with' '(' ListMatchBranch ')' { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.EMatch (uncurry Abs.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $5)) }
   | 'if' Expr 'then' Expr 'else' Expr { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.EIf (uncurry Abs.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $4) (snd $6)) }
   | 'fun' '(' ListArg ')' '->' Expr { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.ELambda (uncurry Abs.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $6)) }
-  | '[' ListExpr ']' { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.EList (uncurry Abs.BNFC'Position (tokenLineCol $1)) (snd $2)) }
   | Expr1 '||' Expr { (fst $1, Abs.EOr (fst $1) (snd $1) (snd $3)) }
   | Expr1 { (fst $1, (snd $1)) }
 
 Expr6 :: { (Abs.BNFC'Position, Abs.Expr) }
 Expr6
-  : LIdent { (fst $1, Abs.EId (fst $1) (snd $1)) }
-  | UIdent '.' UIdent { (fst $1, Abs.EConstr (fst $1) (snd $1) (snd $3)) }
+  : '[' ListExpr ']' { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.EList (uncurry Abs.BNFC'Position (tokenLineCol $1)) (snd $2)) }
+  | LIdent { (fst $1, Abs.EId (fst $1) (snd $1)) }
+  | UIdent '{' ListType '}' '.' UIdent { (fst $1, Abs.EConstr (fst $1) (snd $1) (snd $3) (snd $6)) }
   | '_' { (uncurry Abs.BNFC'Position (tokenLineCol $1), Abs.EIgnore (uncurry Abs.BNFC'Position (tokenLineCol $1))) }
   | Expr6 '(' ListExpr ')' { (fst $1, Abs.EApp (fst $1) (snd $1) (snd $3)) }
   | Literal { (fst $1, Abs.ELit (fst $1) (snd $1)) }

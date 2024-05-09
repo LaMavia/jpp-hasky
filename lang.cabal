@@ -107,6 +107,7 @@ library lib
                     , TypeChecker.Utils.FreeVars
                     , TypeChecker.Utils.BoundVars
                     , TypeChecker.Utils.Unify
+                    , TypeChecker.Utils.Replace
                     , TypeChecker.TC 
                     , TypeChecker.TCConsts
                     , TypeChecker.Check.Program

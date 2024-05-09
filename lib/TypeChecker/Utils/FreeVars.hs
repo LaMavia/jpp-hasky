@@ -2,6 +2,7 @@ module TypeChecker.Utils.FreeVars where
 
 import qualified Abs
 import qualified Data.Set                    as Set
+import           TypeChecker.TC              (Type (TCAny, TCApp, TCBound, TCData, TCInt, TCVar))
 import           TypeChecker.Utils.BoundVars (bvOfTopDef, bvOfType)
 
 type FV a = Set.Set String -> a -> Set.Set String
@@ -113,3 +114,13 @@ fvOfMulOp _ = const Set.empty
 
 fvOfRelOp :: (Show a) => FV (Abs.RelOp' a)
 fvOfRelOp _ = const Set.empty
+
+tcFVOfType :: FV Type
+tcFVOfType s x = case x of
+  TCInt                      -> Set.empty
+  TCVar v | v `Set.member` s -> Set.empty
+  TCVar v                    -> Set.singleton v
+  TCAny                      -> Set.empty
+  TCApp _ ts                 -> Set.unions $ tcFVOfType s <$> ts
+  TCBound vs t               -> tcFVOfType (s `Set.union` Set.fromList vs) t
+  TCData {}                  -> Set.empty

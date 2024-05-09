@@ -39,3 +39,15 @@ typeCheckTypeImpl (Abs.TBound pos argIdents t) = do
   env' <- envSeq ((`alloc` TCAny) . stringOfLident <$> argIdents)
   (tType, t') <- withEnv env' $ typeCheckType t
   return (tType, Abs.TBound pos argIdents t')
+
+{-
+(a1, ..., an) => T(xi, ..., xm) | (ai) <= (xj)
+=============
+TCBound
+  [TCVar "a1", ..., TCVar "an"]
+  (TCApp "T" [TCVar "x1", ..., TCVar "xm"])
+  (replace
+    (Set.fromList ["a1", ..., "an"])
+    (TCApp "T" [TCVar "x1", ..., TCVar "xm"])
+    )
+-}

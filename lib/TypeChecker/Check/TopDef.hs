@@ -15,7 +15,8 @@ import           TypeChecker.Check.Constructor (typeCheckConstructor)
 import           TypeChecker.Check.Expr        (typeCheckExpr)
 import           TypeChecker.Check.Type        (typeCheckType)
 import           TypeChecker.TC
-import           TypeChecker.Utils             (bvOfTopDef, fvOfTopDef)
+import           TypeChecker.Utils             (bvOfTopDef, bvOfType,
+                                                fvOfTopDef)
 
 
 typeCheckTopDef :: TCChecker TopDef TCEnv
@@ -48,7 +49,8 @@ typeCheckTopDefImpl (TDDataNV pos t cs) = typeCheckTopDefImpl (TDDataV pos t [] 
 
 typeCheckTopDefImpl (TDDeclaration pos (LIdent name) t e) = do
   (tType, t') <- typeCheckType t
-  env' <- alloc name tType
+  let bv = bvOfType t'
+  env' <- envSeq (alloc name tType : ((`alloc` TCAny) <$> Set.toList bv))
   (eType, e') <- withEnv env' $ typeCheckExpr e
   when (tType /= eType) $ uThrow [i|Declared type «#{tType}» doesn't match the actual type «#{eType}».|]
   return (env', TDDeclaration pos (LIdent name) t' e')

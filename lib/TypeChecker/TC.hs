@@ -12,6 +12,7 @@ import           Control.Monad.State     (StateT (runStateT), gets, modify)
 import           Data.Foldable           (foldlM)
 import           Data.List               (intercalate, intersperse)
 import qualified Data.Map.Strict         as Map
+import           Data.Maybe              (isJust)
 import           Data.String.Interpolate (i)
 
 
@@ -82,6 +83,11 @@ getVar key = do
   l <- getLoc key
   v <- gets (Map.lookup l . state)
   maybe (uThrow [i|getVar: Key '#{key}' (#{l})|]) return v
+
+isDefined :: String -> TC Bool
+isDefined key = do
+  l <- asks (Map.lookup key)
+  return $ isJust l
 
 withFrame :: TC a -> TC a
 withFrame m = do
