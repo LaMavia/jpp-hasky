@@ -13,6 +13,7 @@ import qualified Data.Map                  as Map
 import qualified Data.Set                  as Set
 import           Data.String.Interpolate   (i)
 import           Debug.Trace               (traceShow, traceShowId)
+import           Preprocessor.TypeDesugar  (typeDesugar)
 import           Print                     (Print (prt), render)
 import           TypeChecker.Check.Arg     (typeCheckArg)
 import           TypeChecker.Check.Type    (typeCheckType)
@@ -32,12 +33,14 @@ typeCheckExpr e = uCatch (placeOfExpr e) (typeCheckExprImpl e)
 typeCheckExprImpl :: TCChecker Abs.Expr Type
 typeCheckExprImpl (Abs.ELet pos xe@(Abs.EId _ (Abs.LIdent x)) t ve be) = do
   (tExpected, t') <- typeCheckType t
-  envExpected <- alloc x tExpected
+  let tExpected' = typeDesugar tExpected
+  envExpected <- alloc x tExpected'
   (tActual, ve') <- withEnv envExpected $ typeCheckExpr ve
-  when (tExpected /= tActual) $ uThrow [i|Expected #{x} to be of type «#{tExpected}», but got «#{tActual}» instead.|]
-  envActual <- alloc x tActual
+  let tActual' = typeDesugar tActual
+  when (tExpected' /= tActual') $ uThrow [i|Expected «#{x}» to be of type «#{tExpected'}», but got «#{tActual'}» instead.|]
+  envActual <- alloc x tActual'
   (tBody, be') <- withEnv envActual $ typeCheckExpr be
-  return (tBody, Abs.ELet pos xe t' ve' be')
+  return (typeDesugar tBody, Abs.ELet pos xe t' ve' be')
 
 typeCheckExprImpl (Abs.ELetNT pos xe ve be) = do
   anyTypeExpr <- tccAnyAst

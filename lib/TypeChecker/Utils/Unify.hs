@@ -70,6 +70,14 @@ ttUnify (TCBound vs t) t' = do
 
 ttUnify _ TCAny = return Map.empty
 
+ttUnify a@(TCData {}) b@(TCData {}) | a == b =
+  return Map.empty
+-- ttUnify (TCData tx argsx dataMapx _) (TCData ty argsy dataMapy _)
+  -- | tx == ty
+  -- , argx == argsy
+  -- = do
+
+
 
 ttUnify a b =
   traceShow (a, b) $

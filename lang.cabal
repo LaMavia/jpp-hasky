@@ -91,6 +91,7 @@ library lib
                     , Par
                     , Runtime
                     , Preprocessor.Desugar
+                    , Preprocessor.TypeDesugar
                     , Preprocessor.Stdlib
                     , Execution.Eval
                     , Execution.Unification
