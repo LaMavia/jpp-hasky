@@ -10,6 +10,7 @@ import           Control.Monad                 (mapAndUnzipM, unless, when)
 import           Data.List                     (sort, union, (\\))
 import qualified Data.Map                      as Map
 import           Data.String.Interpolate       (i)
+import           Debug.Trace                   (traceShow)
 import           TypeChecker.Check.Constructor (typeCheckConstructor)
 import           TypeChecker.Check.Expr        (typeCheckExpr)
 import           TypeChecker.Check.Type        (typeCheckType)
@@ -51,8 +52,8 @@ typeCheckTopDefImpl (TDDeclaration pos (LIdent name) t e) = do
   let bv = bvOfType t'
   env' <- envSeq (alloc name tType : ((`alloc` TCAny) <$> bv))
   (eType, e') <- withEnv env' $ typeCheckExpr e
-  areValidTypes <- tType <: eType
-  unless areValidTypes$ uThrow [i|Declared type «#{tType}» doesn't match the actual type «#{eType}».|]
+  areValidTypes <- traceShow (tType, eType) $ tType <: eType
+  unless areValidTypes $ uThrow [i|Declared type «#{tType}» doesn't match the actual type «#{eType}».|]
   return (env', TDDeclaration pos (LIdent name) t' e')
 
 typeCheckTopDefImpl (TDDeclarationNT pos (LIdent name) e) = do
