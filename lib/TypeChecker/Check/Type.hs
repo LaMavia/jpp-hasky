@@ -23,13 +23,14 @@ typeCheckTypeImpl t@(Abs.TVar _ (Abs.LIdent a)) = do
 
 typeCheckTypeImpl (Abs.TApp pos (Abs.UIdent t) ts) = do
   (tsTypes, ts') <- mapAndUnzipM typeCheckType ts
-  d <- getVar t
-  case d of
-    (TCData _ _ _ c) | c tsTypes ->
-      return (TCApp t tsTypes, Abs.TApp pos (Abs.UIdent t) ts')
-    _ ->
-      let tsString = showSepList ", " tsTypes
-      in uThrow [i|Types «#{tsString}» are not applicable to «#{d}»|]
+  return (TCApp t tsTypes, Abs.TApp pos (Abs.UIdent t) ts')
+  -- d <- getVar t
+  -- case d of
+  --   (TCData _ _ _ c) | c tsTypes ->
+  --     return (TCApp t tsTypes, Abs.TApp pos (Abs.UIdent t) ts')
+  --   _ ->
+  --     let tsString = showSepList ", " tsTypes
+  --     in uThrow [i|Types «#{tsString}» are not applicable to «#{d}»|]
 
 typeCheckTypeImpl t@(Abs.TType _ (Abs.UIdent name)) = do
   d <- getVar name

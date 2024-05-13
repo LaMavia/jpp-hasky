@@ -93,17 +93,20 @@ prependStdlib (Program pos stmts) = Program pos (definableStdlib <> stmts)
 
 runTypePrelude :: TC TCEnv
 runTypePrelude = do
-  envSeq [decFun, defPrint]
+  envSeq [decInt, decFun, defPrint]
   where
     defPrint =
-      -- print :: (a) => Fun(a, Void())
-      let f = TCBound ["a"] (TCApp "Fun" [TCVar "a", TCApp "Void" []])
+      -- print :: (a) => Fn(a, Void())
+      let f = TCBound ["a"] (TCApp "Fn" [TCVar "a", TCApp "Void" []])
       in TC.alloc "print" f
+    decInt =
+      let int = TCData "Int" [] Map.empty ([] ==)
+      in TC.alloc "Int" int
     decFun =
       -- Don't allow for `Fun()` or `Fun(a)`.
       -- The latter should have been replaced with `a` during typechecking.
-      let fun = TCData "Fun" [] Map.empty (\case _:_:_ -> True; _ -> False)
-      in TC.alloc "Fun" fun
+      let fun = TCData "Fn" ["a", "b"] Map.empty (\case [_,_] -> True; _ -> False)
+      in TC.alloc "Fn" fun
 
 runPrelude :: RT RTEnv
 runPrelude = do

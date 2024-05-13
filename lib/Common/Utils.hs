@@ -1,7 +1,8 @@
 module Common.Utils where
 import           Control.Monad.Reader (MonadReader (ask, local))
 import           Data.Foldable        (foldlM)
-import           Data.List            (group, intercalate, nub, sort, unfoldr)
+import           Data.List            (group, intercalate, nub, sort, unfoldr,
+                                       union)
 
 envSeq :: (MonadReader r m) => [m r] -> m r
 envSeq actions = do
@@ -27,3 +28,6 @@ findDuplicates = unfoldr firstDuplicates
 
 showSepList :: Show a => String -> [a] -> String
 showSepList sep xs = intercalate sep $ show <$> xs
+
+unions :: Eq a => [[a]] -> [a]
+unions = foldr union []

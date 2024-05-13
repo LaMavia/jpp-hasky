@@ -1,25 +1,29 @@
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DoAndIfThenElse #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE QuasiQuotes     #-}
+{-# LANGUAGE TupleSections   #-}
 
 module TypeChecker.Check.Expr where
 import qualified Abs
 import           Common                    (envSeq, placeOfExpr, showSepList,
-                                            uCatch, uThrow, withEnv)
-import           Control.Monad             (mapAndUnzipM, when, zipWithM)
-import           Data.Foldable             (foldlM, foldrM)
+                                            uCatch, uThrow, unions, withEnv)
+import           Control.Monad             (mapAndUnzipM, when)
+import           Data.List                 ((\\))
 import qualified Data.Map                  as Map
 import qualified Data.Set                  as Set
 import           Data.String.Interpolate   (i)
+import           Debug.Trace               (traceShow, traceShowId)
 import           Print                     (Print (prt), render)
 import           TypeChecker.Check.Arg     (typeCheckArg)
 import           TypeChecker.Check.Type    (typeCheckType)
 import           TypeChecker.TC            (TCChecker,
-                                            Type (TCAny, TCApp, TCData, TCVar),
+                                            Type (TCAny, TCApp, TCBound, TCData, TCVar),
                                             alloc, astOfType, getVar)
-import           TypeChecker.TCConsts      (tccAnyAst, tccBool, tccFun)
-import           TypeChecker.Utils         (bvOfType, combineUnifiers,
-                                            stringOfLident, tcFVOfType)
+import           TypeChecker.TCConsts      (pattern TccInt, tccAnyAst, tccBool,
+                                            tccBoolKey, tccFun, tccIntKey)
+import           TypeChecker.Utils         (tcFVOfType)
+import           TypeChecker.Utils.Apply   (tcApply)
 import           TypeChecker.Utils.Replace (replace)
-import           TypeChecker.Utils.Unify   ((<~))
 
 
 typeCheckExpr :: TCChecker Abs.Expr Type
@@ -28,10 +32,11 @@ typeCheckExpr e = uCatch (placeOfExpr e) (typeCheckExprImpl e)
 typeCheckExprImpl :: TCChecker Abs.Expr Type
 typeCheckExprImpl (Abs.ELet pos xe@(Abs.EId _ (Abs.LIdent x)) t ve be) = do
   (tExpected, t') <- typeCheckType t
-  (tActual, ve') <- typeCheckExpr ve
+  envExpected <- alloc x tExpected
+  (tActual, ve') <- withEnv envExpected $ typeCheckExpr ve
   when (tExpected /= tActual) $ uThrow [i|Expected #{x} to be of type «#{tExpected}», but got «#{tActual}» instead.|]
-  env' <- alloc x tActual
-  (tBody, be') <- withEnv env' $ typeCheckExpr be
+  envActual <- alloc x tActual
+  (tBody, be') <- withEnv envActual $ typeCheckExpr be
   return (tBody, Abs.ELet pos xe t' ve' be')
 
 typeCheckExprImpl (Abs.ELetNT pos xe ve be) = do
@@ -46,8 +51,9 @@ typeCheckExprImpl (Abs.ELetNT pos xe ve be) = do
       in uThrow [i|Invalid typecheck expression returned «#{p}». Expected a typed `let` expression.|]
 
 typeCheckExprImpl (Abs.EIf pos ce te ee) = do
+  tBool <- getVar tccBoolKey
   (cType, ce') <- typeCheckExpr ce
-  when (cType /= tccBool) $ uThrow [i|If condition must be of type «Bool», but got «#{cType}» instead.|]
+  when (cType /= tBool) $ uThrow [i|If condition must be of type «Bool», but got «#{cType}» instead.|]
   (tType, te') <- typeCheckExpr te
   (eType, ee') <- typeCheckExpr ee
   when (tType /= eType) $ uThrow [i|Both branches of if must have the same type, but got «#{tType}», and «#{eType}» instead.|]
@@ -74,17 +80,98 @@ typeCheckExprImpl e@(Abs.EConstr _ (Abs.UIdent t) (Abs.UIdent c)) = do
        - y = T.C(0) ;;                => y :: T(Any, Any, Int) = ... ;;
        - -}
       let cArgs = dataMap Map.! c
-      let bvs = Set.fromList argIdents
-      let avs = Set.unions $ tcFVOfType Set.empty <$> cArgs
-      let leftVs = bvs `Set.difference` avs
-      x <- replace leftVs $ TCApp t $ TCVar <$> Set.toList avs
-      return (x, e)
+      let bvs = argIdents
+      let avs = unions $ tcFVOfType <$> cArgs
+      let leftVs = bvs \\ avs
+      x <- replace (Set.fromList leftVs) $ TCApp t $ TCVar <$> avs
+      return (TCBound avs x, e)
     TCData _ _ dataMap _ ->
       let constrString = showSepList " | " $ Map.keys dataMap
       in uThrow [i|«#{t}.#{c}» is not a constructor of type «#{t}». Available constructors: #{constrString}.|]
     _ ->
       uThrow [i|«#{t}» is not a type.|]
 
-typeCheckExprImpl e = return (TCAny, e)
+typeCheckExprImpl e@(Abs.EApp pos ce argExprs) = do
+  let checkedCe = typeCheckExpr ce
+  (tCe', ce') <-
+    case ce of
+      Abs.EConstr {} -> checkedCe
+      Abs.EId {}     -> checkedCe
+      Abs.ELambda {} -> checkedCe
+      _              -> uThrow [i|Invalid caller expression «#{ce}»|]
+  (argTypes', argExprs') <- mapAndUnzipM typeCheckExpr argExprs
+  t <- traceShow e $ tcApply tCe' argTypes'
+  return (t, Abs.EApp pos ce' argExprs')
+
+typeCheckExprImpl e@(Abs.EMatch pos ve branches) = do
+  -- (tVe', ve') <- typeCheckExpr ve
+  return (TCAny, e)
+
+typeCheckExprImpl e@(Abs.EIgnore {}) = return (TCAny, e)
+typeCheckExprImpl e@(Abs.ELit _ l) =
+  case l of
+    Abs.LInt {} -> (,e) <$> getVar "Int"
+
+typeCheckExprImpl (Abs.Neg pos e) = do
+  tInt <- getVar tccIntKey
+  (e'Type, e') <- typeCheckExpr e
+  case e'Type of
+    t' | tInt == t' -> return (tInt, Abs.Neg pos e')
+    t'              -> uThrow [i|Expected an «Int», but got «#{t'}» instead|]
+
+typeCheckExprImpl (Abs.Not pos e) = do
+  tBool <- getVar tccBoolKey
+  (e'Type, e') <- typeCheckExpr e
+  case e'Type of
+    t' | tBool == t' -> return (tBool, Abs.Not pos e')
+    t'               -> uThrow [i|Expected a «Bool», but got «#{t'}» instead|]
+
+typeCheckExprImpl (Abs.EMul pos a op b) = do
+  tInt <- getVar tccIntKey
+  (a'Type, a') <- typeCheckExpr a
+  (b'Type, b') <- typeCheckExpr b
+  if a'Type == b'Type && b'Type == a'Type && tInt == a'Type then
+    return (tInt, Abs.EMul pos a' op b')
+  else
+    uThrow [i|Expected both operands to be of type «Int», but got «#{a'Type}», and «#{b'Type}» instead|]
+
+typeCheckExprImpl (Abs.EAdd pos a op b) = do
+  tInt <- getVar tccIntKey
+  (a'Type, a') <- typeCheckExpr a
+  (b'Type, b') <- typeCheckExpr b
+  if traceShowId (a'Type == b'Type) && traceShowId (b'Type == a'Type) && tInt == a'Type then
+    return (tInt, Abs.EAdd pos a' op b')
+  else
+    uThrow [i|Expected both operands to be of type «#{tInt}», but got «#{a'Type}», and «#{b'Type}» instead|]
+
+typeCheckExprImpl (Abs.ERel pos a op b) = do
+  tBool <- getVar tccBoolKey
+  (a'Type, a') <- typeCheckExpr a
+  (b'Type, b') <- typeCheckExpr b
+  if a'Type == b'Type then
+    return (tBool, Abs.ERel pos a' op b')
+  else
+    uThrow [i|Expected both operands to be of type «Int», but got «#{a'Type}», and «#{b'Type}» instead|]
+
+typeCheckExprImpl (Abs.EAnd pos a b) = do
+  tBool <- getVar tccBoolKey
+  (a'Type, a') <- typeCheckExpr a
+  (b'Type, b') <- typeCheckExpr b
+  if a'Type == b'Type && b'Type == a'Type && tBool == a'Type then
+    return (tBool, Abs.EAnd pos a' b')
+  else
+    uThrow [i|Expected both operands to be of type «Bool», but got «#{a'Type}», and «#{b'Type}» instead|]
+
+typeCheckExprImpl (Abs.EOr pos a b) = do
+  tBool <- getVar tccBoolKey
+  (a'Type, a') <- typeCheckExpr a
+  (b'Type, b') <- typeCheckExpr b
+  if a'Type == b'Type && b'Type == a'Type && tBool == a'Type then
+    return (tBool, Abs.EOr pos a' b')
+  else
+    uThrow [i|Expected both operands to be of type «Bool», but got «#{a'Type}», and «#{b'Type}» instead|]
+
+
+typeCheckExprImpl e = uThrow [i|unmatched case: #{e}|]
   -- when (c `Map.notMember` )
 

@@ -1,35 +1,35 @@
 module TypeChecker.Utils.BoundVars where
 
 import qualified Abs
-import qualified Data.Set       as Set
-import           TypeChecker.TC (TC,
-                                 Type (TCAny, TCApp, TCBound, TCData, TCInt, TCVar))
+import           Common         (unions)
+import           Data.List      (singleton, union)
+import qualified TypeChecker.TC as TC
+import           TypeChecker.TC (TC)
 
-type BV a = a -> Set.Set String
+type BV a = a -> [String]
 
 stringOfLident :: Abs.LIdent -> String
 stringOfLident (Abs.LIdent x) = x
 
 bvOfTopDef :: (Show a) => BV (Abs.TopDef' a)
 bvOfTopDef x = case x of
-  Abs.TDDataV _ _ lidents _     -> Set.fromList $ stringOfLident <$> lidents
+  Abs.TDDataV _ _ lidents _     -> unions $ singleton . stringOfLident <$> lidents
   Abs.TDDeclaration _ _ type_ _ -> bvOfType type_
-  Abs.TDDataNV {}               -> Set.empty
-  Abs.TDDeclarationNT {}        -> Set.empty
+  Abs.TDDataNV {}               -> []
+  Abs.TDDeclarationNT {}        -> []
 
 bvOfType :: (Show a) => BV (Abs.Type' a)
 bvOfType x = case x of
-  Abs.TVar {} -> Set.empty
-  Abs.TApp {} -> Set.empty
-  Abs.TType {} -> Set.empty
-  Abs.TBound _ vs t -> Set.fromList (stringOfLident <$> vs) `Set.union` bvOfType t
+  Abs.TVar {}       -> []
+  Abs.TApp {}       -> []
+  Abs.TType {}      -> []
+  Abs.TBound _ vs t -> unions (singleton . stringOfLident <$> vs) `union` bvOfType t
 
--- tcBvOfType :: Type -> TC (Set.Set String)
--- tcBvOfType o = case o of
---   TCAny -> return Set.empty
---   TCInt -> return Set.empty
---   TCVar x -> return $ Set.singleton x
---   TCData _ xs _ _ -> return $ Set.fromList xs
---   TCBound xs t -> return $ Set.fromList xs `Set.union` tcBvOfType t
---   TCApp t -> _a
+tcBvOfType :: TC.Type -> TC [String]
+tcBvOfType o = case o of
+  TC.TCAny           -> return []
+  TC.TCVar x         -> return [x]
+  TC.TCData _ xs _ _ -> return xs
+  TC.TCBound xs t    -> union xs <$> tcBvOfType t
+  TC.TCApp _ ts      -> unions <$> mapM tcBvOfType ts
 

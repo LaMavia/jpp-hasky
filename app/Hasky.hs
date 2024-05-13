@@ -45,7 +45,7 @@ run v p s =
       putStrLn err
       exitFailure
     Right tree -> do
-      let program = prependStdlib $ desugarProgram tree
+      let program = desugarProgram $ prependStdlib tree
       let tcResult = runTC $ typeCheckProgram program
       case tcResult of
         Left err      -> do

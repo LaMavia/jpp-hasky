@@ -108,6 +108,8 @@ library lib
                     , TypeChecker.Utils.BoundVars
                     , TypeChecker.Utils.Unify
                     , TypeChecker.Utils.Replace
+                    , TypeChecker.Utils.Apply
+                    , TypeChecker.Utils.Cmp
                     , TypeChecker.TC 
                     , TypeChecker.TCConsts
                     , TypeChecker.Check.Program

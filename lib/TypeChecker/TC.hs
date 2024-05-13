@@ -1,4 +1,5 @@
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE QuasiQuotes     #-}
 
 module TypeChecker.TC where
 
@@ -10,10 +11,11 @@ import           Control.Monad.Reader    (MonadReader (ask, local),
                                           ReaderT (runReaderT), asks)
 import           Control.Monad.State     (StateT (runStateT), gets, modify)
 import           Data.Foldable           (foldlM)
-import           Data.List               (intercalate, intersperse)
+import           Data.List               (intercalate)
 import qualified Data.Map.Strict         as Map
 import           Data.Maybe              (isJust)
 import           Data.String.Interpolate (i)
+import           Debug.Trace             (trace, traceShow)
 
 
 type Location = Integer
@@ -23,23 +25,20 @@ type TCEnv = Map.Map String Location
 data TCState = TCState { state :: !(Map.Map Location Type), loc :: !Location }
 
 data Type
-  = TCInt
-  | TCVar !String
+  = TCVar !String
   | TCApp !String ![Type]
   | TCAny
   | TCBound ![String] !Type
   | TCData !String ![String] !(Map.Map String [Type]) !([Type] -> Bool)
 
 instance Eq Type where
-  TCAny == _                               = True
   _ == TCAny                               = True
   TCVar x == TCVar y                       = x == y
   TCApp tx tsx == TCApp ty tsy             = tx == ty && tsx == tsy
   TCData tx asx mx _ == TCData ty asy my _ = tx == ty && asx == asy && mx == my
-  _ == _                                   = False
+  a == b                                   = trace [i|Failed to compare #{a}, and #{b}|] (False :: Bool)
 
 instance Show Type where
-  show TCInt = "Int"
   show (TCVar x) = x
   show (TCBound args t) =
     let argsString = showSepList ", " args
@@ -49,7 +48,7 @@ instance Show Type where
     let tsString = showSepList ", " ts in [i|#{t}(#{tsString})|]
   show (TCData t args _ _) =
     let argsString = intercalate ", " args
-    in [i|#{t}(#{argsString})|]
+    in [i|type #{t}(#{argsString})|]
 
 
 type TC = ReaderT TCEnv (StateT TCState (ExceptT UError Identity))
@@ -96,7 +95,6 @@ withFrame m = do
   modify (\s -> s {loc = i0})
   return res
 
-
 initialEnv :: TCEnv
 initialEnv = Map.empty
 
@@ -115,9 +113,9 @@ mapTCEnv c ins = do
       return (env', u:us)
 
 astOfType :: Type -> Abs.BNFC'Position -> TC Abs.Type
-astOfType TCInt pos = return $ Abs.TType pos (Abs.UIdent "Int")
 astOfType (TCVar x) pos = return $ Abs.TVar pos (Abs.LIdent x)
 astOfType (TCApp t ts) pos = do
   tsAsts <- mapM (`astOfType` Nothing) ts
   return $ Abs.TApp pos (Abs.UIdent t) tsAsts
 astOfType t _ = uThrow [i|Type «#{t}» doesn't translate to AST.|]
+

@@ -1,9 +1,11 @@
 module TypeChecker.Utils.Replace where
-import           Data.Functor   ((<&>))
-import qualified Data.Set       as Set
-import           TypeChecker.TC (TC,
-                                 Type (TCAny, TCApp, TCBound, TCData, TCInt, TCVar),
-                                 getVar, isDefined)
+import           Data.Functor    ((<&>))
+import qualified Data.List       as List
+import qualified Data.Map.Strict as Map
+import qualified Data.Set        as Set
+import           TypeChecker.TC  (TC,
+                                  Type (TCAny, TCApp, TCBound, TCData, TCVar),
+                                  getVar, isDefined)
 
 replace :: Set.Set String -> Type -> TC Type
 replace s (TCVar x) | x `Set.member` s = do
@@ -17,7 +19,11 @@ replace s (TCBound vs t) =
 
 replace s (TCApp t ts) = mapM (replace s) ts <&> TCApp t
 
-replace _ TCInt = return TCInt
 replace _ TCAny = return TCAny
-replace _ d@(TCData {}) = return d
+replace s (TCData t args dataMap c) = do
+  let args' = List.filter (`Set.notMember` s) args
+  let entries = Map.toList dataMap
+  entries' <- mapM (\(k, ts) -> do ts' <- mapM (replace s) ts; return (k, ts')) entries
+  let dataMap' = Map.fromList entries'
+  return $ TCData t args' dataMap' c
 

@@ -48,6 +48,9 @@ desugarTopDef x = case x of
 
 desugarType :: (Show a) => Abs.Type' a -> Abs.Type' a
 desugarType x = case x of
+  Abs.TApp pos (Abs.UIdent "Fun") types ->
+    let types' = desugarType <$> types
+    in foldr1 (\t u -> Abs.TApp pos (Abs.UIdent "Fn") [t, u]) types'
   Abs.TApp pos uident types ->
     Abs.TApp pos uident (desugarType <$> types)
   Abs.TBound pos lidents type_ ->
