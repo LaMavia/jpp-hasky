@@ -9,7 +9,7 @@ import           Control.Monad           (when, zipWithM)
 import           Data.Foldable           (foldlM)
 import qualified Data.Map.Strict         as Map
 import           Data.String.Interpolate (i)
-import           Debug.Trace             (traceShow)
+import           Debug.Trace             (trace, traceShow)
 import           TypeChecker.TC          (TC, TCEnv, Type (..), getVar)
 
 type Unifier = Map.Map String Type
@@ -56,9 +56,11 @@ ttUnify (TCApp tx tsx) (TCApp ty tsy) | tx == ty = do
   us <- zipWithM ttUnify tsx tsy
   foldlM joinUnifiers Map.empty us
 
-ttUnify (TCApp f ts) TCAny = do
-  us <- traceShow (f, ts) $ zipWithM ttUnify ts (repeat TCAny)
+ttUnify (TCApp _ ts) TCAny = do
+  us <- zipWithM ttUnify ts (repeat TCAny)
   foldlM joinUnifiers Map.empty us
+
+ttUnify TCAny _ = return Map.empty
 
 
 ttUnify (TCBound vs t) t' = do
@@ -80,5 +82,5 @@ ttUnify a@(TCData {}) b@(TCData {}) | a == b =
 
 
 ttUnify a b =
-  traceShow (a, b) $
+  -- trace [i|@ttUnify fallthrough: a=«#{a}», b=«#{b}»|] $
   uThrow [i|Types «#{a}», and «#{b}» are not unifiable|]

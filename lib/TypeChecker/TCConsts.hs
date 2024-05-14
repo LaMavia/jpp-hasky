@@ -9,27 +9,17 @@ tccAny = TCAny
 tccAnyAst :: TC Abs.Type
 tccAnyAst = astOfType tccAny Nothing
 
-tccBoolKey :: String
-tccBoolKey = "Bool"
-
-tccBool :: Type
-tccBool = TCApp tccBoolKey []
-
 pattern TccBool :: Type
-pattern TccBool <- TCApp "Bool" []
-
-tccIntKey :: String
-tccIntKey = "Int"
+pattern TccBool <- TCApp "Bool" [] where
+ TccBool = TCApp "Bool" []
 
 pattern TccInt :: Type
 pattern TccInt <- TCApp "Int" [] where
-  TccInt = TCApp tccIntKey []
+  TccInt = TCApp "Int" []
 
+pattern TccFn :: [Type] -> Type
+pattern TccFn args <- TCApp "Fn" args where
+  TccFn [x] = x
+  TccFn xs  = foldr1 (\t r -> TCApp "Fn" [t, r]) xs
 
-tccFun :: [Type] -> Type
-tccFun = TCApp "Fn"
-
-pattern TccFunc :: [Type] -> Type
-pattern TccFunc args <- TCApp "Fn" args where
-  TccFunc args = TCApp "Fn" args
 

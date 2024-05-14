@@ -55,6 +55,8 @@ desugarType x = case x of
     Abs.TApp pos uident (desugarType <$> types)
   Abs.TBound pos lidents type_ ->
     Abs.TBound pos lidents (desugarType type_)
+  Abs.TType pos t ->
+    Abs.TApp pos t []
   y -> y
 
 desugarConstructor :: (Show a) => Abs.Constructor' a -> Abs.Constructor' a

@@ -55,7 +55,7 @@ typeCheckTopDefImpl (TDDeclaration pos (LIdent name) t e) = do
   env' <- envSeq (alloc name tType : ((`alloc` TCAny) <$> bv))
   (eType, e') <- withEnv env' $ typeCheckExpr e
   let eType' = typeDesugar eType
-  areValidTypes <- trace [i|tType'=«#{tType'}», eType'=«#{eType'}»|] $ tType' <: eType'
+  areValidTypes <- tType' <: eType'
   unless areValidTypes $ uThrow [i|Declared type «#{tType'}» doesn't match the actual type «#{eType'}».|]
   return (env', TDDeclaration pos (LIdent name) t' e')
 

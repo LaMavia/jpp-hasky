@@ -53,7 +53,7 @@ run v p s =
           hPrint stderr err
           hSetSGR stderr [ Reset ]
         Right ((_, program'), _) -> do
-          hPutStrLn stderr (printTree program')
+          -- hPutStrLn stderr (printTree program')
           r <- runRT $ evalProgram program'
           case r of
             Left err      -> do

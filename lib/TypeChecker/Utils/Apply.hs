@@ -13,8 +13,7 @@ import           TypeChecker.Utils.Replace (replace)
 import           TypeChecker.Utils.Unify   (applyTTUnifier, ttUnify)
 
 tcApply :: Type -> [Type] -> TC Type
-tcApply f0 params =
-    trace [i|f=«#{f0'}», params=«#{params}»|] $ applicator f0' params
+tcApply f0 = applicator f0'
     where
     f0' = case f0 of
               TCData _ args _ _ -> TCBound args f0
