@@ -34,5 +34,5 @@ main :: Void
   in let _ :: Void = print([head([1,2,3])])
   in let _ :: Void = print([tail([1,2,3])])
   in let _ :: Void = print([isSingleton([1,2,3]), isSingleton([1])])
-  in Void.Void 
+  in Void.V
 ;;

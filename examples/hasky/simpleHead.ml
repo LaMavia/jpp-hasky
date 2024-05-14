@@ -15,5 +15,5 @@ tail_xs :: List (Int) =
 main :: Void 
   =  let _ :: Void = print(x)
   in let _ :: Void = print(tail_xs)
-  in Void.Void()
+  in Void.V()
 ;;

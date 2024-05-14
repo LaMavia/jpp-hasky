@@ -7,5 +7,5 @@ isXLt :: Bool = x < y ;;
 main :: Void 
   =  let _ :: Void = print(isXGt)
   in let _ :: Void = print(isXLt) 
-  in Void.Void
+  in Void.V
 ;;

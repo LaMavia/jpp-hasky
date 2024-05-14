@@ -5,27 +5,27 @@
 
 module TypeChecker.Check.Expr where
 import qualified Abs
-import           Common                    (envSeq, placeOfExpr, showSepList,
-                                            uCatch, uThrow, unions, withEnv)
-import           Control.Monad             (mapAndUnzipM, when, zipWithM)
-import           Data.Foldable             (foldlM)
-import           Data.List                 ((\\))
-import qualified Data.Map                  as Map
-import qualified Data.Set                  as Set
-import           Data.String.Interpolate   (i)
-import           Debug.Trace               (traceShow, traceShowId)
-import           Preprocessor.TypeDesugar  (typeDesugar)
-import           Print                     (Print (prt), render)
-import           TypeChecker.Check.Arg     (typeCheckArg)
-import           TypeChecker.Check.Type    (typeCheckType)
-import           TypeChecker.TC            (TCChecker,
-                                            Type (TCAny, TCApp, TCBound, TCData, TCVar),
-                                            alloc, astOfType, getVar)
-import           TypeChecker.TCConsts      (pattern TccBool, pattern TccFn,
-                                            pattern TccInt, tccAnyAst)
-import           TypeChecker.Utils         (joinUnifiers, tcFVOfType, ttUnify)
-import           TypeChecker.Utils.Apply   (tcApply)
-import           TypeChecker.Utils.Replace (replace)
+import           Common                   (envSeq, placeOfExpr, showSepList,
+                                           uCatch, uThrow, unions, withEnv)
+import           Control.Monad            (mapAndUnzipM, unless, when, zipWithM)
+import           Data.Foldable            (foldlM)
+import           Data.List                (intercalate, (\\))
+import qualified Data.Map                 as Map
+import qualified Data.Set                 as Set
+import           Data.String.Interpolate  (i)
+import           Debug.Trace              (traceShow, traceShowId)
+import           Preprocessor.TypeDesugar (typeDesugar)
+import           Print                    (Print (prt), render)
+import           TypeChecker.Check.Arg    (typeCheckArg)
+import           TypeChecker.Check.Type   (typeCheckType)
+import           TypeChecker.TC           (TCChecker,
+                                           Type (TCAny, TCApp, TCBound, TCData, TCVar),
+                                           alloc, astOfType, getVar)
+import           TypeChecker.TCConsts     (pattern TccBool, pattern TccFn,
+                                           pattern TccInt, pattern TccVoid,
+                                           tccAnyAst)
+import           TypeChecker.Utils        (joinUnifiers, replace, tcApply,
+                                           tcFVOfType, ttUnify, (<:))
 
 
 typeCheckExpr :: TCChecker Abs.Expr Type
@@ -42,6 +42,12 @@ typeCheckExprImpl (Abs.ELet pos xe@(Abs.EId _ (Abs.LIdent x)) t ve be) = do
   envActual <- alloc x tActual'
   (tBody, be') <- withEnv envActual $ typeCheckExpr be
   return (typeDesugar tBody, Abs.ELet pos xe t' ve' be')
+
+typeCheckExprImpl (Abs.ELet pos xe@(Abs.EIgnore _) t ve be) = do
+  (_, t') <- typeCheckType t
+  (_, ve') <- typeCheckExpr ve
+  (tbe', be') <- typeCheckExpr be
+  return (tbe', Abs.ELet pos xe t' ve' be')
 
 typeCheckExprImpl (Abs.ELetNT pos xe ve be) = do
   anyTypeExpr <- tccAnyAst
@@ -74,27 +80,14 @@ typeCheckExprImpl e@(Abs.EId _ (Abs.LIdent x)) = do
   t <- getVar x
   return (t, e)
 
--- typeCheckExprImpl e@(Abs.EConstr _ (Abs.UIdent t) (Abs.UIdent c)) = do
---   d <- getVar t
---   case d of
---     TCData _ argIdents dataMap _ | c `Map.member` dataMap -> do
---       {-
---        - data T(a, b, c) = A(a, List(b)) | C(c) ;;
---        - x = T.A(1, [Bool.True()]) ;; => x :: T(Int, Bool, Any) = ... ;;
---        - y = T.C(0) ;;                => y :: T(Any, Any, Int) = ... ;;
---        - -}
---       return (x, e)
---     TCData _ _ dataMap _ ->
---       let constrString = showSepList " | " $ Map.keys dataMap
---       in uThrow [i|«#{t}.#{c}» is not a constructor of type «#{t}». Available constructors: #{constrString}.|]
---     _ ->
---       uThrow [i|«#{t}» is not a type.|]
+typeCheckExprImpl e@(Abs.EConstr pos _ _) = do
+  typeCheckExprImpl $ Abs.EApp pos e []
 
 typeCheckExprImpl (Abs.EApp pos ce@(Abs.EConstr posConstr (Abs.UIdent t) (Abs.UIdent c)) argExprs) = do
   (tArgExprs', argExprs') <- mapAndUnzipM typeCheckExpr argExprs
   d <- getVar t
   case d of
-    TCData _ _ dataMap check
+    TCData _ _ dataMap _
       |  c `Map.member` dataMap -> do
       let cArgs = dataMap Map.! c
       us <- zipWithM ttUnify cArgs tArgExprs'
@@ -103,11 +96,12 @@ typeCheckExprImpl (Abs.EApp pos ce@(Abs.EConstr posConstr (Abs.UIdent t) (Abs.UI
       return (eType, Abs.EApp pos ce argExprs')
     TCData _ _ dataMap _
       | c `Map.notMember` dataMap ->
-      uThrow [i|«#{c}» is not a constructor of type «#{t}»|]
+      let csString = showSepList " | " [ [i|#{k}(#{tsString})|] :: String | (k, ts) <- Map.toList dataMap, let tsString = showSepList ", " ts  ]
+      in uThrow [i|«#{c}» is not a constructor of type «#{t}». Available constructors: #{csString}|]
     td ->
       uThrow [i|Invalid constructor type «#{td}»|]
 
-typeCheckExprImpl e@(Abs.EApp pos ce argExprs) = do
+typeCheckExprImpl (Abs.EApp pos ce argExprs) = do
   let checkedCe = typeCheckExpr ce
   (tCe', ce') <-
     case ce of

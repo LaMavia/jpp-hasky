@@ -22,4 +22,6 @@ pattern TccFn args <- TCApp "Fn" args where
   TccFn [x] = x
   TccFn xs  = foldr1 (\t r -> TCApp "Fn" [t, r]) xs
 
-
+pattern TccVoid :: Type
+pattern TccVoid <- TCApp "Void" [] where
+  TccVoid = TCApp "Void" []
