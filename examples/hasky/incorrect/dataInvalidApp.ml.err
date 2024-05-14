@@ -1,9 +1,9 @@
-[93mError: unmatched case: EMatch (Just (18,11)) (EId (Just (18,17)) (LIdent "xs")) [MBBranch (Just (19,13)) (EApp (Just (19,15)) (EConstr (Just (19,15)) (UIdent "List") (UIdent "Cons")) [EId (Just (19,25)) (LIdent "h"),EIgnore (Just (19,28))]) (EApp (Just (19,34)) (EConstr (Just (19,34)) (UIdent "Maybe") (UIdent "Just")) [EId (Just (19,45)) (LIdent "h")]),MBBranch (Just (20,13)) (EIgnore (Just (20,15))) (EApp (Just (20,34)) (EConstr (Just (20,34)) (UIdent "Maybe") (UIdent "Nothing")) [])]
+[93mError: Type «T» expected 1 arguments, but was given 3
 Callstack:
 1:1	at <<program>>
-16:7	at head :: (a) => Fun(List(a), Maybe(a))
-17:11	at fun (xs List(a))
-18:11	at match xs with
+3:1	at type V ()
+3:10	at X(U(), T(a, b, c))
+3:17	at T(a, b, c)
 
 
 [0m

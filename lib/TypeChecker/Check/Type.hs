@@ -23,14 +23,14 @@ typeCheckTypeImpl t@(Abs.TVar _ (Abs.LIdent a)) = do
 
 typeCheckTypeImpl (Abs.TApp pos (Abs.UIdent t) ts) = do
   (tsTypes, ts') <- mapAndUnzipM typeCheckType ts
-  return (TCApp t tsTypes, Abs.TApp pos (Abs.UIdent t) ts')
-  -- d <- getVar t
-  -- case d of
-  --   (TCData _ _ _ c) | c tsTypes ->
-  --     return (TCApp t tsTypes, Abs.TApp pos (Abs.UIdent t) ts')
-  --   _ ->
-  --     let tsString = showSepList ", " tsTypes
-  --     in uThrow [i|Types «#{tsString}» are not applicable to «#{d}»|]
+  d <- getVar t
+  case d of
+    TCData _ args _ _ | length args == length ts' ->
+      return (TCApp t tsTypes, Abs.TApp pos (Abs.UIdent t) ts')
+    TCData _ args _ _ ->
+      uThrow [i|Type «#{t}» expected #{length args} arguments, but was given #{length ts'}|]
+    other ->
+      uThrow [i|Cannot apply arguments to a non-data identifier «#{t}» = #{other}|]
 
 typeCheckTypeImpl t@(Abs.TType _ (Abs.UIdent name)) = do
   d <- getVar name
@@ -41,14 +41,3 @@ typeCheckTypeImpl (Abs.TBound pos argIdents t) = do
   (tType, t') <- withEnv env' $ typeCheckType t
   return (tType, Abs.TBound pos argIdents t')
 
-{-
-(a1, ..., an) => T(xi, ..., xm) | (ai) <= (xj)
-=============
-TCBound
-  [TCVar "a1", ..., TCVar "an"]
-  (TCApp "T" [TCVar "x1", ..., TCVar "xm"])
-  (replace
-    (Set.fromList ["a1", ..., "an"])
-    (TCApp "T" [TCVar "x1", ..., TCVar "xm"])
-    )
--}

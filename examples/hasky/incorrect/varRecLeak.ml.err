@@ -1,13 +1,11 @@
-Error: «getLoc: Key 'y' is not defined in the current env.».
+[93mError: getLoc: Key 'y' is not defined in the current env.
 Callstack:
 1:1	at <<program>>
-11:1	at main :: Void
-11:16	at f(0)
-3:3	at if ==
-4:5	at let y :: Int 
-4:26	at f(1)
+1:1	at f :: Fn(Int(), Void())
+2:3	at fun (x Int())
 3:3	at if ==
 6:5	at print(y)
 6:11	at y
 
 
+[0m

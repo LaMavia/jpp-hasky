@@ -1,9 +1,10 @@
-Error: «getLoc: Key 'secret' is not defined in the current env.».
+[93mError: getLoc: Key 'secret' is not defined in the current env.
 Callstack:
 1:1	at <<program>>
-5:1	at main :: Void
-6:3	at let _ :: Void 
+5:1	at main :: Void()
+6:3	at let _ :: Void() 
 7:6	at print(secret)
 7:12	at secret
 
 
+[0m
