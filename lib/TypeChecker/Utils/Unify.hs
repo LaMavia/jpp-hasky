@@ -4,13 +4,12 @@
 module TypeChecker.Utils.Unify where
 
 import qualified Abs
-import           Common                  (uThrow)
-import           Control.Monad           (when, zipWithM)
+import           Common                  (envSeq, uThrow)
+import           Control.Monad           (unless, zipWithM)
 import           Data.Foldable           (foldlM)
 import qualified Data.Map.Strict         as Map
 import           Data.String.Interpolate (i)
-import           Debug.Trace             (trace, traceShow)
-import           TypeChecker.TC          (TC, TCEnv, Type (..), getVar)
+import           TypeChecker.TC          (TC, TCEnv, Type (..), alloc, getVar)
 
 type Unifier = Map.Map String Type
 empty :: Unifier
@@ -25,6 +24,10 @@ applyTTUnifier u (TCApp t ts) = TCApp t (applyTTUnifier u <$> ts)
 applyTTUnifier u (TCBound _ t) = applyTTUnifier u t
 applyTTUnifier _ t = t
 
+allocTCUnifier :: Unifier -> TC TCEnv
+allocTCUnifier u =
+  envSeq $ uncurry alloc <$> Map.toList u
+
 combineUnifiers :: Unifier -> Unifier -> Unifier
 combineUnifiers u v = Map.map (applyTTUnifier v) u
 
@@ -36,8 +39,8 @@ tcUnifyExpr (Abs.EApp _ ce@(Abs.EConstr _ (Abs.UIdent tx) (Abs.UIdent cx)) tsx) 
   d <- getVar tx
   case d of
     TCData _ _ constrMap _ -> do
-      when (cx `Map.notMember` constrMap) (uThrow [i|«#{cx}» is not a constructor of «#{d}»|])
-      foldlM (\u (ta, tb) -> combineUnifiers u <$> (ta `tcUnifyExpr` tb)) Map.empty $ zip tsx tsy
+      unless (cx `Map.member` constrMap) $ uThrow [i|«#{cx}» is not a constructor of «#{d}»|]
+      foldlM (\u (ta, tb) -> joinUnifiers u =<< (ta `tcUnifyExpr` tb)) Map.empty $ zip tsx tsy
     _ -> uThrow [i|«#{ce}» is not a valid constructor|]
 
 tcUnifyExpr x y = uThrow [i|Types «#{x}», and «#{y}» are not unifiable|]

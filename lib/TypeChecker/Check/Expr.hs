@@ -5,27 +5,31 @@
 
 module TypeChecker.Check.Expr where
 import qualified Abs
-import           Common                   (envSeq, placeOfExpr, showSepList,
-                                           uCatch, uThrow, unions, withEnv)
-import           Control.Monad            (mapAndUnzipM, unless, when, zipWithM)
-import           Data.Foldable            (foldlM)
-import           Data.List                (intercalate, (\\))
-import qualified Data.Map                 as Map
-import qualified Data.Set                 as Set
-import           Data.String.Interpolate  (i)
-import           Debug.Trace              (traceShow, traceShowId)
-import           Preprocessor.TypeDesugar (typeDesugar)
-import           Print                    (Print (prt), render)
-import           TypeChecker.Check.Arg    (typeCheckArg)
-import           TypeChecker.Check.Type   (typeCheckType)
-import           TypeChecker.TC           (TCChecker,
-                                           Type (TCAny, TCApp, TCBound, TCData, TCVar),
-                                           alloc, astOfType, getVar)
-import           TypeChecker.TCConsts     (pattern TccBool, pattern TccFn,
-                                           pattern TccInt, pattern TccVoid,
-                                           tccAnyAst)
-import           TypeChecker.Utils        (joinUnifiers, replace, tcApply,
-                                           tcFVOfType, ttUnify, (<:))
+import           Common                    (envSeq, placeOfExpr, showSepList,
+                                            uCatch, uThrow, unions, withEnv)
+import           Control.Monad             (mapAndUnzipM, unless, when,
+                                            zipWithM)
+import           Data.Bifunctor            (Bifunctor (first))
+import           Data.Foldable             (foldlM)
+import           Data.List                 (intercalate, (\\))
+import qualified Data.Map                  as Map
+import qualified Data.Set                  as Set
+import           Data.String.Interpolate   (i)
+import           Debug.Trace               (traceShow, traceShowId)
+import           Preprocessor.Desugar      (desugarType)
+import           Preprocessor.TypeDesugar  (typeDesugar)
+import           Print                     (Print (prt), render)
+import           TypeChecker.Check.Arg     (typeCheckArg)
+import           TypeChecker.Check.Pattern (typeCheckPattern)
+import           TypeChecker.Check.Type    (typeCheckType)
+import           TypeChecker.TC            (TCChecker,
+                                            Type (TCAny, TCApp, TCBound, TCData, TCVar),
+                                            alloc, astOfType, getVar)
+import           TypeChecker.TCConsts      (pattern TccBool, pattern TccFn,
+                                            pattern TccInt, pattern TccVoid,
+                                            tccAnyAst)
+import           TypeChecker.Utils         (joinUnifiers, replace, tcApply,
+                                            tcFVOfType, ttUnify, (<:))
 
 
 typeCheckExpr :: TCChecker Abs.Expr Type
@@ -48,6 +52,15 @@ typeCheckExprImpl (Abs.ELet pos xe@(Abs.EIgnore _) t ve be) = do
   (_, ve') <- typeCheckExpr ve
   (tbe', be') <- typeCheckExpr be
   return (tbe', Abs.ELet pos xe t' ve' be')
+
+typeCheckExprImpl (Abs.ELet pos xe t ve be) = do
+  (tType, t') <- typeCheckType t
+  (tActual, ve') <- first typeDesugar <$> typeCheckExpr ve
+  areTypesMatching <- tType <: tActual
+  unless areTypesMatching $ uThrow [i|Expected #{xe} to be of type «#{tType}», but got «#{tActual}» instead.|]
+  (env', xe') <- typeCheckPattern tActual xe
+  (tBody, be') <- withEnv env' $ typeCheckExpr be
+  return (typeDesugar tBody, Abs.ELet pos xe' t' ve' be')
 
 typeCheckExprImpl (Abs.ELetNT pos xe ve be) = do
   anyTypeExpr <- tccAnyAst

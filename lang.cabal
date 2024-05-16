@@ -119,6 +119,7 @@ library lib
                     , TypeChecker.Check.Constructor
                     , TypeChecker.Check.Expr
                     , TypeChecker.Check.Arg
+                    , TypeChecker.Check.Pattern
                     , Common
                     , Common.UError
                     , Common.Utils
