@@ -31,7 +31,7 @@ typeCheckTopDefImpl td@(TDDataV pos (UIdent t) _ constructors) = do
   let checker args' = length args == length args'
   -- temporarily alloc `t` as an opaque type
   env' <- alloc t (TCData t args Map.empty checker)
-  env'' <- withEnv env' $ envSeq ((`alloc` TCAny) <$> args)
+  env'' <- withEnv env' $ envSeq ((\x -> alloc x (TCVar x)) <$> args)
   (dataConstructorEntries, constructors') <- withEnv env'' $ mapAndUnzipM typeCheckConstructor constructors
   guardDuplicateConstructors dataConstructorEntries
   let dataMap = Map.fromList dataConstructorEntries

@@ -22,7 +22,7 @@ type Location = Integer
 
 type TCEnv = Map.Map String Location
 
-data TCState = TCState { state :: !(Map.Map Location Type), loc :: !Location }
+data TCState = TCState { state :: !(Map.Map Location Type), loc :: !Location, iota :: !Integer } deriving (Show)
 
 data Type
   = TCVar !String
@@ -99,7 +99,13 @@ initialEnv :: TCEnv
 initialEnv = Map.empty
 
 initialState :: TCState
-initialState = TCState {state=Map.empty, loc=0}
+initialState = TCState {state=Map.empty, loc=0, iota=0}
+
+appendIota :: String -> TC String
+appendIota x = do
+  iot <- gets iota
+  modify (\s -> s{iota=iot+1})
+  return $ x ++ show iot
 
 mapTCEnv :: TCChecker a TCEnv -> TCChecker [a] TCEnv
 mapTCEnv c ins = do
