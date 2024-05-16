@@ -82,6 +82,7 @@ library lib
                     , string-interpolate ^>= 0.3.3.0
                     , transformers ^>= 0.6.1.1
                     , mtl ^>= 2.3.1
+                    , monadlist ^>= 0.0.2
     hs-source-dirs:   lib
     exposed-modules:  Abs
                     , ErrM

@@ -1,6 +1,6 @@
-module TypeChecker.Utils.Cmp ((<:), (=~=)) where
+module TypeChecker.Utils.Cmp ((<:), (=~=), tcCmpM ) where
 import           Control.Monad.Except    (MonadError (catchError))
-import           TypeChecker.TC          (TC, Type (..), getVar)
+import           TypeChecker.TC          (TC, Type (..))
 import           TypeChecker.Utils.Unify (ttUnify)
 
 
@@ -13,4 +13,10 @@ infixr 6 =~=
 a =~= b = do
   l <- a <: b
   r <- b <: a
-  return $ l == r
+  return $ l && r
+
+tcCmpM :: Type -> Type -> TC Ordering
+tcCmpM l r = do
+  eq <- l =~= r
+  lt <- l <: r
+  return $ if eq then EQ else if lt then LT else GT

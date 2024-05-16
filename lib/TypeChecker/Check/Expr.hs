@@ -9,8 +9,10 @@ import           Common                    (envSeq, placeOfExpr, showSepList,
                                             uCatch, uThrow, unions, withEnv)
 import           Control.Monad             (mapAndUnzipM, unless, when,
                                             zipWithM)
+import           Control.Monad.ListM       (allM, minimumByM)
 import           Data.Bifunctor            (Bifunctor (first))
 import           Data.Foldable             (foldlM)
+import           Data.Functor              (($>))
 import           Data.List                 (intercalate, (\\))
 import qualified Data.Map                  as Map
 import qualified Data.Set                  as Set
@@ -29,7 +31,7 @@ import           TypeChecker.TCConsts      (pattern TccBool, pattern TccFn,
                                             pattern TccInt, pattern TccVoid,
                                             tccAnyAst)
 import           TypeChecker.Utils         (joinUnifiers, replace, tcApply,
-                                            tcFVOfType, ttUnify, (<:))
+                                            tcCmpM, tcFVOfType, ttUnify, (<:))
 
 
 typeCheckExpr :: TCChecker Abs.Expr Type
@@ -72,6 +74,23 @@ typeCheckExprImpl (Abs.ELetNT pos xe ve be) = do
     e ->
       let p = render $ prt 0 e
       in uThrow [i|Invalid typecheck expression returned «#{p}». Expected a typed `let` expression.|]
+
+typeCheckExprImpl (Abs.EMatch pos ve branches) = do
+  (tve', ve') <- typeCheckExpr ve
+  (tBranches', branches') <- mapAndUnzipM (typeCheckMatchBranch tve') branches
+  minType <- minimumByM tcCmpM tBranches'
+  -- assuming that <: is transitive
+  areTypesValid <- allM (minType <:) tBranches'
+  unless areTypesValid $
+    let typeString = showSepList "," tBranches'
+    in uThrow [i|Mismatched branch return types: «#{typeString}»|]
+  return (typeDesugar minType, Abs.EMatch pos ve' branches')
+  where
+    typeCheckMatchBranch :: Type -> TCChecker Abs.MatchBranch Type
+    typeCheckMatchBranch t (Abs.MBBranch bpos xe be) = do
+      (env', xe') <- typeCheckPattern t xe
+      (tBody, be') <- withEnv env' $ typeCheckExpr be
+      return (typeDesugar tBody, Abs.MBBranch bpos xe' be')
 
 typeCheckExprImpl (Abs.EIf pos ce te ee) = do
   let tBool = TccBool

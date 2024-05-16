@@ -1,15 +1,21 @@
-{-# LANGUAGE QuasiQuotes   #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE PatternGuards   #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE QuasiQuotes     #-}
+{-# LANGUAGE TupleSections   #-}
 
 module TypeChecker.Utils.Unify where
 
 import qualified Abs
-import           Common                  (envSeq, uThrow)
-import           Control.Monad           (unless, zipWithM)
-import           Data.Foldable           (foldlM)
-import qualified Data.Map.Strict         as Map
-import           Data.String.Interpolate (i)
-import           TypeChecker.TC          (TC, TCEnv, Type (..), alloc, getVar)
+import           Common                    (envSeq, uThrow, withEnv)
+import           Control.Monad             (unless, zipWithM)
+import           Data.Foldable             (foldlM)
+import qualified Data.Map.Strict           as Map
+import qualified Data.Set                  as Set
+import           Data.String.Interpolate   (i)
+import           Debug.Trace               (trace, traceShowId)
+import           TypeChecker.TC            (TC, TCEnv, Type (..), alloc, getVar)
+import           TypeChecker.TCConsts      (pattern TccInt)
+import           TypeChecker.Utils.Replace (replace)
 
 type Unifier = Map.Map String Type
 empty :: Unifier
@@ -31,19 +37,38 @@ allocTCUnifier u =
 combineUnifiers :: Unifier -> Unifier -> Unifier
 combineUnifiers u v = Map.map (applyTTUnifier v) u
 
+{-
+List(@Any) % List.Just(t)
+
+
+-}
+
 tcUnifyExpr :: Abs.Expr -> Type -> TC Unifier
+tcUnifyExpr (Abs.EIgnore _) _ = return Map.empty
 tcUnifyExpr (Abs.EId _ (Abs.LIdent x)) t = return $ Map.singleton x t
-tcUnifyExpr (Abs.EApp _ ce@(Abs.EConstr _ (Abs.UIdent tx) (Abs.UIdent cx)) tsx) (TCApp ty tsy)
+tcUnifyExpr (Abs.ELit _ l) t
+  | Abs.LInt {} <- l, TccInt <- t = return Map.empty
+  | otherwise = uThrow [i|Literal «#{l}» is not of type «#{t}».|]
+tcUnifyExpr a@(Abs.EApp _ ce@(Abs.EConstr _ (Abs.UIdent tx) (Abs.UIdent cx)) tsx) b@(TCApp ty tsy)
   | tx == ty
   = do
   d <- getVar tx
   case d of
-    TCData _ _ constrMap _ -> do
+    TCData _ args constrMap _ -> do
       unless (cx `Map.member` constrMap) $ uThrow [i|«#{cx}» is not a constructor of «#{d}»|]
-      foldlM (\u (ta, tb) -> joinUnifiers u =<< (ta `tcUnifyExpr` tb)) Map.empty $ zip tsx tsy
+      let argExprs  = constrMap Map.! cx
+      env' <- envSeq $ zipWith alloc args tsy
+      argExprs' <-  withEnv env' $ mapM (replace (Set.fromList args)) argExprs
+      us <- zipWithM tcUnifyExpr tsx argExprs'
+      foldlM joinUnifiers Map.empty us
     _ -> uThrow [i|«#{ce}» is not a valid constructor|]
 
 tcUnifyExpr x y = uThrow [i|Types «#{x}», and «#{y}» are not unifiable|]
+
+
+tcUnifyType :: Abs.Type -> Type -> TC Unifier
+tcUnifyType = undefined
+
 
 joinUnifiers :: Unifier -> Unifier -> TC Unifier
 joinUnifiers a b | Map.null (Map.intersection a b) = return $ Map.union a b
