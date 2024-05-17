@@ -52,7 +52,7 @@ typeCheckTopDefImpl (TDDeclaration pos (LIdent name) t e) = do
   (tType, t') <- typeCheckType t
   let tType' = typeDesugar tType
   let bv = bvOfType t'
-  env' <- envSeq (alloc name tType : ((`alloc` TCAny) <$> bv))
+  env' <- envSeq (alloc name tType : ((\x -> alloc x (TCVar x)) <$> bv))
   (eType, e') <- withEnv env' $ typeCheckExpr e
   let eType' = typeDesugar eType
   areValidTypes <- tType' <: eType'

@@ -101,10 +101,12 @@ initialEnv = Map.empty
 initialState :: TCState
 initialState = TCState {state=Map.empty, loc=0, iota=0}
 
+incIota :: TC ()
+incIota = modify (\s -> s{iota=iota s + 1})
+
 appendIota :: String -> TC String
 appendIota x = do
   iot <- gets iota
-  modify (\s -> s{iota=iot+1})
   return $ x ++ show iot
 
 mapTCEnv :: TCChecker a TCEnv -> TCChecker [a] TCEnv

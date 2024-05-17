@@ -8,8 +8,8 @@ import           Common                  (envSeq, placeOfType, showSepList,
 import           Control.Monad           (mapAndUnzipM)
 import           Data.String.Interpolate (i)
 import           TypeChecker.TC          (TCChecker,
-                                          Type (TCAny, TCApp, TCData), alloc,
-                                          getVar)
+                                          Type (TCAny, TCApp, TCData, TCVar),
+                                          alloc, getVar)
 import           TypeChecker.Utils       (stringOfLident)
 
 
@@ -37,7 +37,7 @@ typeCheckTypeImpl t@(Abs.TType _ (Abs.UIdent name)) = do
   return (d, t)
 
 typeCheckTypeImpl (Abs.TBound pos argIdents t) = do
-  env' <- envSeq ((`alloc` TCAny) . stringOfLident <$> argIdents)
+  env' <- envSeq ((\x -> alloc x (TCVar x)) . stringOfLident <$> argIdents)
   (tType, t') <- withEnv env' $ typeCheckType t
   return (tType, Abs.TBound pos argIdents t')
 

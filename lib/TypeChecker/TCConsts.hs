@@ -25,3 +25,7 @@ pattern TccFn args <- TCApp "Fn" args where
 pattern TccVoid :: Type
 pattern TccVoid <- TCApp "Void" [] where
   TccVoid = TCApp "Void" []
+
+pattern TccUnif :: [Type] -> Type
+pattern TccUnif args <- TCApp "$" args where
+  TccUnif args = TCApp "$" args

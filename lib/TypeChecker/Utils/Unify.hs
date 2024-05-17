@@ -1,3 +1,4 @@
+{-# LANGUAGE DoAndIfThenElse #-}
 {-# LANGUAGE PatternGuards   #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE QuasiQuotes     #-}
@@ -6,18 +7,20 @@
 module TypeChecker.Utils.Unify where
 
 import qualified Abs
-import           Common                    (envSeq, uThrow, withEnv)
-import           Control.Monad             (unless, zipWithM)
-import           Control.Monad.Except      (MonadError (catchError))
-import           Control.Monad.ListM       (allM)
-import           Data.Foldable             (foldlM)
-import qualified Data.Map.Strict           as Map
-import qualified Data.Set                  as Set
-import           Data.String.Interpolate   (i)
-import           Debug.Trace               (trace)
-import           TypeChecker.TC            (TC, TCEnv, Type (..), alloc, getVar)
-import           TypeChecker.TCConsts      (pattern TccInt)
-import           TypeChecker.Utils.Replace (replace)
+import           Common                     (envSeq, uCatch, uThrow, withEnv)
+import           Control.Monad              (unless, zipWithM)
+import           Control.Monad.Except       (MonadError (catchError))
+import           Control.Monad.ListM        (allM)
+import           Data.Foldable              (foldlM)
+import qualified Data.Map.Strict            as Map
+import qualified Data.Set                   as Set
+import           Data.String.Interpolate    (i)
+import           Debug.Trace                (trace)
+import           TypeChecker.TC             (TC, TCEnv, Type (..), alloc,
+                                             appendIota, getVar)
+import           TypeChecker.TCConsts       (pattern TccInt)
+import           TypeChecker.Utils.FreeVars (tcFVOfType)
+import           TypeChecker.Utils.Replace  (replace)
 
 type Unifier = Map.Map String Type
 empty :: Unifier
@@ -30,7 +33,7 @@ applyTTUnifier :: Unifier -> Type -> Type
 applyTTUnifier u (TCVar x) | x `Map.member` u = u Map.! x
 applyTTUnifier u (TCApp t ts) = TCApp t (applyTTUnifier u <$> ts)
 applyTTUnifier u (TCBound _ t) = applyTTUnifier u t
-applyTTUnifier _ t = t
+applyTTUnifier _ t = trace [i|@applyTTUnifier Skipping #{t}|] t
 
 allocTCUnifier :: Unifier -> TC TCEnv
 allocTCUnifier u =
@@ -48,7 +51,7 @@ tcUnifyExpr (Abs.ELit _ l) t
   | otherwise = uThrow [i|Literal «#{l}» is not of type «#{t}».|]
 tcUnifyExpr (Abs.EApp _ ce@(Abs.EConstr _ (Abs.UIdent tx) (Abs.UIdent cx)) tsx) (TCApp ty tsy)
   | tx == ty
-  = do
+  = uCatch (Nothing, "tcUnifyExpr") $ do
   d <- getVar tx
   case d of
     TCData _ args constrMap _ -> do
@@ -65,13 +68,19 @@ tcUnifyExpr x y = uThrow [i|Types «#{x}», and «#{y}» are not unifiable|]
 joinUnifiers :: Unifier -> Unifier -> TC Unifier
 joinUnifiers a b | Map.null (Map.intersection a b) = return $ Map.union a b
 joinUnifiers a b = do
-  areCompatible <- allM (\(k, va) -> maybe (return True) (=~= va) (Map.lookup k b)) $ Map.toList a
-  if areCompatible then return (Map.union a b) else uThrow [i|inconsistent unifiers: a=«#{a}», b=«#{b}»|]
+  let a' = Map.difference a b
+  let b' = Map.difference b a
+  let commonKeys = Map.keys $ Map.intersection a b
+  commonMinValues <- mapM (uncurry tcMinM) $ (\k -> (a Map.! k, b Map.! k)) <$> commonKeys
+  let common' = Map.fromList $ zip commonKeys commonMinValues
+  return $ Map.unions [a', b', common']
 
 ttUnify :: Type -> Type -> TC Unifier
-ttUnify (TCVar x) t = return $ Map.singleton x t
+ttUnify (TCVar x) t = trace [i|@ttUnify #{x} := «#{t}»|] $ return $ Map.singleton x t
 
-ttUnify (TCApp tx tsx) (TCApp ty tsy) | tx == ty = do
+ttUnify l@(TCApp tx tsx) r@(TCApp ty tsy) | tx == ty = trace [i|@ttUnify
+\tl=«#{l}»
+\tr=«#{r}»|] $ do
   us <- zipWithM ttUnify tsx tsy
   foldlM joinUnifiers Map.empty us
 
@@ -99,6 +108,14 @@ ttUnify a b =
   uThrow [i|Types «#{a}», and «#{b}» are not unifiable|]
 
 
+rename :: Type -> TC Type
+rename t = do
+  let fvs = tcFVOfType t
+  fvs' <- mapM appendIota fvs
+  let u = Map.fromList $ zip fvs $ TCVar <$> fvs'
+  return $ applyTTUnifier u t
+
+
 infixr 6 <:
 (<:) :: Type -> Type -> TC Bool
 l <: r = catchError (True <$ ttUnify l r) (return . const False)
@@ -112,6 +129,19 @@ a =~= b = do
 
 tcCmpM :: Type -> Type -> TC Ordering
 tcCmpM l r = do
-  eq <- l =~= r
   lt <- l <: r
-  return $ if eq then EQ else if lt then LT else GT
+  gt <- r <: l
+  case (lt, gt) of
+    (True, True)   -> return EQ
+    (_, True)      -> return GT
+    (True, _)      -> return LT
+    (False, False) -> uThrow [i|Incomparable types a=«#{l}», and b=«#{r}».|]
+
+tcMinM :: Type -> Type -> TC Type
+tcMinM l r = do
+  ord <- tcCmpM l r
+  return $ case ord of
+    LT -> l
+    EQ -> l
+    GT -> r
+

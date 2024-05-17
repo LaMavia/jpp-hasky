@@ -17,21 +17,22 @@ import           Data.List                 (intercalate, (\\))
 import qualified Data.Map                  as Map
 import qualified Data.Set                  as Set
 import           Data.String.Interpolate   (i)
-import           Debug.Trace               (traceShow, traceShowId)
+import           Debug.Trace               (trace, traceShow, traceShowId)
 import           Preprocessor.Desugar      (desugarType)
 import           Preprocessor.TypeDesugar  (typeDesugar)
-import           Print                     (Print (prt), render)
+import           Print                     (Print (prt), printTree, render)
 import           TypeChecker.Check.Arg     (typeCheckArg)
 import           TypeChecker.Check.Pattern (typeCheckPattern)
 import           TypeChecker.Check.Type    (typeCheckType)
 import           TypeChecker.TC            (TCChecker,
                                             Type (TCAny, TCApp, TCBound, TCData, TCVar),
-                                            alloc, astOfType, getVar)
+                                            alloc, astOfType, getVar, incIota)
 import           TypeChecker.TCConsts      (pattern TccBool, pattern TccFn,
-                                            pattern TccInt, pattern TccVoid,
-                                            tccAnyAst)
-import           TypeChecker.Utils         (joinUnifiers, replace, tcApply,
-                                            tcCmpM, tcFVOfType, ttUnify, (<:))
+                                            pattern TccInt, pattern TccUnif,
+                                            pattern TccVoid, tccAnyAst)
+import           TypeChecker.Utils         (applyTTUnifier, joinUnifiers,
+                                            rename, replace, tcApply, tcCmpM,
+                                            tcFVOfType, ttUnify, (<:))
 
 
 typeCheckExpr :: TCChecker Abs.Expr Type
@@ -115,17 +116,19 @@ typeCheckExprImpl e@(Abs.EId _ (Abs.LIdent x)) = do
 typeCheckExprImpl e@(Abs.EConstr pos _ _) = do
   typeCheckExprImpl $ Abs.EApp pos e []
 
-typeCheckExprImpl (Abs.EApp pos ce@(Abs.EConstr posConstr (Abs.UIdent t) (Abs.UIdent c)) argExprs) = do
+typeCheckExprImpl e@(Abs.EApp pos ce@(Abs.EConstr _ (Abs.UIdent t) (Abs.UIdent c)) argExprs) = do
   (tArgExprs', argExprs') <- mapAndUnzipM typeCheckExpr argExprs
-  d <- getVar t
+  d <- trace [i|@checkExpr argExprs'=«#{map printTree argExprs'}  >======>  #{tArgExprs'}»|] $ getVar t
   case d of
-    TCData _ _ dataMap _
+    TCData _ args dataMap _
       |  c `Map.member` dataMap -> do
+      incIota
       let cArgs = dataMap Map.! c
-      us <- zipWithM ttUnify cArgs tArgExprs'
-      u <- foldlM joinUnifiers Map.empty us
-      eType <- replace (Set.fromList (Map.keys u)) $ TCApp t cArgs
-      return (eType, Abs.EApp pos ce argExprs')
+      -- cArgs' <- mapM rename cArgs
+      u <- ttUnify (TccUnif cArgs) (TccUnif tArgExprs')
+      -- let cArgs' = applyTTUnifier u <$> cArgs
+      let args' = applyTTUnifier u . TCVar <$> args
+      trace [i|@checkExpr e=«#{printTree e}»,\n\tu=#{u},\n\targs'=«#{args'}»|] $ return (TCApp t args', Abs.EApp pos ce argExprs')
     TCData _ _ dataMap _
       | c `Map.notMember` dataMap ->
       let csString = showSepList " | " [ [i|#{k}(#{tsString})|] :: String | (k, ts) <- Map.toList dataMap, let tsString = showSepList ", " ts  ]
@@ -139,7 +142,7 @@ typeCheckExprImpl (Abs.EApp pos ce argExprs) = do
     case ce of
       Abs.EId {}     -> checkedCe
       Abs.ELambda {} -> checkedCe
-      _              -> uThrow [i|Invalid caller expression «#{ce}»|]
+      _              -> uThrow [i|Invalid caller expression «#{printTree ce}»|]
   (argTypes', argExprs') <- mapAndUnzipM typeCheckExpr argExprs
   t <- tcApply tCe' argTypes'
   return (t, Abs.EApp pos ce' argExprs')
