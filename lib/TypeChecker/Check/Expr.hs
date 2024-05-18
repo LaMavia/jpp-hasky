@@ -123,14 +123,15 @@ typeCheckExprImpl e@(Abs.EApp pos ce@(Abs.EConstr _ (Abs.UIdent t) (Abs.UIdent c
   case d of
     TCData _ args dataMap _
       |  c `Map.member` dataMap -> do
-      incIota
-      args' <- mapM appendIota args
+      -- incIota
+      -- args' <- mapM appendIota args
       -- let args' = args
       let cArgs = dataMap Map.! c
-      cArgs' <- mapM rename cArgs
-      u <- ttUnify (TccUnif tArgExprs') (TccUnif cArgs')
+      -- cArgs' <- mapM rename cArgs
+      -- let cArgs' = cArgs
+      u <- ttUnify  (TccUnif cArgs) (TccUnif tArgExprs')
       -- let cArgs' = applyTTUnifier u <$> cArgs
-      let args'' = applyTTUnifier u . TCVar <$> args'
+      let args'' = applyTTUnifier u . TCVar <$> args
       let eType = TCApp t args''
       trace [i|@checkExpr e=«#{printTree e}»,\n\tu=«#{u}»,\nt\teType=«#{eType}»|] $ return (eType, Abs.EApp pos ce argExprs')
     TCData _ _ dataMap _

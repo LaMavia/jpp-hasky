@@ -12,6 +12,7 @@ import           Control.Monad              (unless, zipWithM)
 import           Control.Monad.Except       (MonadError (catchError))
 import           Control.Monad.ListM        (allM)
 import           Data.Foldable              (foldlM)
+import           Data.Functor               ((<&>))
 import qualified Data.Map.Strict            as Map
 import qualified Data.Set                   as Set
 import           Data.String.Interpolate    (i)
@@ -36,79 +37,32 @@ applyTTUnifier u (TCApp t ts) = TCApp t (applyTTUnifier u <$> ts)
 applyTTUnifier u (TCBound _ t) = applyTTUnifier u t
 applyTTUnifier _ t = t
 
-allocTCUnifier :: Unifier -> TC TCEnv
-allocTCUnifier u =
-  envSeq $ uncurry alloc <$> Map.toList u
+joinUnifiers :: Unifier -> Unifier -> Unifier
+joinUnifiers l_ r_ = trace [i|@joinUnifiers:\n l=#{l_}\n r=#{r_}\n u=#{u}|] u
+  where
+    u = joinUnifiersImpl l_ r_
+    joinUnifiersImpl :: Unifier -> Unifier -> Unifier
+    joinUnifiersImpl l r =
+      let l' = Map.map (applyTTUnifier r) l
+          r' = Map.difference r l
+      in Map.union l' r'
 
-combineUnifiers :: Unifier -> Unifier -> Unifier
-combineUnifiers u v = Map.map (applyTTUnifier v) u
-
-
-tcUnifyExpr :: Abs.Expr -> Type -> TC Unifier
-tcUnifyExpr (Abs.EIgnore _) _ = return Map.empty
-tcUnifyExpr (Abs.EId _ (Abs.LIdent x)) t = return $ Map.singleton x t
-tcUnifyExpr (Abs.ELit _ l) t
-  | Abs.LInt {} <- l, TccInt <- t = return Map.empty
-  | otherwise = uThrow [i|Literal «#{l}» is not of type «#{t}».|]
-tcUnifyExpr (Abs.EApp _ ce@(Abs.EConstr _ (Abs.UIdent tx) (Abs.UIdent cx)) tsx) (TCApp ty tsy)
-  | tx == ty
-  = uCatch (Nothing, "tcUnifyExpr") $ do
-  d <- getVar tx
-  case d of
-    TCData _ args constrMap _ -> do
-      unless (cx `Map.member` constrMap) $ uThrow [i|«#{cx}» is not a constructor of «#{d}»|]
-      let cargs  = constrMap Map.! cx
-      env' <- envSeq $ zipWith alloc args tsy
-      cargs' <-  withEnv env' $ mapM (replace (Set.fromList args)) cargs
-      us <- zipWithM tcUnifyExpr tsx cargs'
-      foldlM joinUnifiers Map.empty us
-    _ -> uThrow [i|«#{ce}» is not a valid constructor|]
-
-tcUnifyExpr x y = uThrow [i|Types «#{x}», and «#{y}» are not unifiable|]
-
-joinUnifiers :: Unifier -> Unifier -> TC Unifier
-joinUnifiers a b | Map.null (Map.intersection a b) = return $ Map.union a b
-joinUnifiers a b = do
-  let a' = Map.difference a b
-  let b' = Map.difference b a
-  let commonKeys = Map.keys $ Map.intersection a b
-  commonMinValues <- mapM (uncurry tcMinM) $ (\k -> (a Map.! k, b Map.! k)) <$> commonKeys
-  let common' = Map.fromList $ zip commonKeys commonMinValues
-  return $ Map.unions [a', b', common']
 
 ttUnify :: Type -> Type -> TC Unifier
-ttUnify t t' = do
-  u <- ttUnifyImpl t t'
-  trace [i|@ttUnify t:#{t}\n\tt':#{t'}\n\tu:#{u}|] $ return u
-
-ttUnifyImpl :: Type -> Type -> TC Unifier
-ttUnifyImpl (TCVar x) t = return $ Map.singleton x t
-
-ttUnifyImpl (TCApp tx tsx) (TCApp ty tsy) | tx == ty = do
-  us <- zipWithM ttUnify tsx tsy
-  foldlM joinUnifiers Map.empty us
-
-ttUnifyImpl (TCApp _ ts) TCAny = do
-  us <- zipWithM ttUnify ts (repeat TCAny)
-  foldlM joinUnifiers Map.empty us
-
-ttUnifyImpl TCAny _ = return Map.empty
-
-ttUnifyImpl (TCBound vs t) t' = do
-  u <- ttUnify t t'
-  let missingVars = filter (`Map.notMember` u) vs
-  let missingEntries = (, TCAny) <$> missingVars
-  let uCompliment = Map.fromList missingEntries
-  return $ Map.union u uCompliment
-
-ttUnifyImpl _ TCAny = return Map.empty
-
-ttUnifyImpl a@(TCData {}) b@(TCData {}) | a == b =
-  return Map.empty
-
-
-ttUnifyImpl a b =
-  uThrow [i|Types «#{a}», and «#{b}» are not unifiable|]
+ttUnify t_ t'_ = do
+  u <- ttUnifyImpl t_ t'_
+  trace [i|@ttUnify t=«#{t_}», t'=«#{t'_}», u=#{u}|] $ return u
+  where
+    ttUnifyImpl :: Type -> Type -> TC Unifier
+    ttUnifyImpl (TCVar x) t = return $ singleton x t
+    ttUnifyImpl (TCBound _ t) t' = ttUnifyImpl t t'
+    ttUnifyImpl t (TCBound _ t') = ttUnifyImpl t t'
+    ttUnifyImpl (TCApp t ts) (TCApp t' ts') | t == t' =
+      foldlM aux empty (zip ts ts')
+      where
+        aux :: Unifier -> (Type, Type) -> TC Unifier
+        aux u (ta, tb) = ttUnify ta tb <&> joinUnifiers u
+    ttUnifyImpl l r = uThrow [i|Cannot unify types l=«#{l}», r=«#{r}».|]
 
 
 rename :: Type -> TC Type

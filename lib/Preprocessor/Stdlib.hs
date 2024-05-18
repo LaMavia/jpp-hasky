@@ -45,16 +45,16 @@ definableStdlib =
         | Just(a)
       ;;
 
-      head :: (a) => Fun(List(a), Maybe(a))
-        = fun (xs List(a)) ->
-          match xs with (
-            | List.Cons(h, _) -> Maybe.Just(h)
-            | _               -> Maybe.Nothing()
-          )
-        ;;
+
     |]
 
-
+      -- head :: (a) => Fun(List(a), Maybe(a))
+      --   = fun (xs List(a)) ->
+      --     match xs with (
+      --       | List.Cons(h, _) -> Maybe.Just(h)
+      --       | _               -> Maybe.Nothing()
+      --     )
+      --   ;;
       -- tail :: (a) => Fun(List(a), Maybe(List(a)))
       --   = fun (xs List(a)) ->
       --     match xs with (

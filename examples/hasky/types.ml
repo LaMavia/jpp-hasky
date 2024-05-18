@@ -3,9 +3,9 @@ type Tree (a)
   | Node (Tree(a), a, Tree(a))
 ;;
 
-(* x :: Tree(Int)  *)
-(*   = Tree.Leaf() *)
-(* ;; *)
+x :: Tree(Int) 
+  = Tree.Node(Tree.Leaf(), 1, Tree.Leaf())
+;;
 
 (**)
 (* map_tree :: (a, b) => Fun(Fun(a, b), Tree(a), Tree(b)) *)
