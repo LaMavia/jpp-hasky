@@ -8,7 +8,7 @@ module TypeChecker.Utils.Unify where
 
 import qualified Abs
 import           Common                     (envSeq, uCatch, uThrow, withEnv)
-import           Control.Monad              (unless, zipWithM)
+import           Control.Monad              (filterM, unless, zipWithM, (<=<))
 import           Control.Monad.Except       (MonadError (catchError))
 import           Control.Monad.ListM        (allM)
 import           Data.Foldable              (foldlM)
@@ -37,21 +37,37 @@ applyTTUnifier u (TCApp t ts) = TCApp t (applyTTUnifier u <$> ts)
 applyTTUnifier u (TCBound _ t) = applyTTUnifier u t
 applyTTUnifier _ t = t
 
-joinUnifiers :: Unifier -> Unifier -> Unifier
-joinUnifiers l_ r_ = trace [i|@joinUnifiers:\n l=#{l_}\n r=#{r_}\n u=#{u}|] u
+normaliseUnifier :: Unifier -> Unifier
+normaliseUnifier u =
+  trace [i|@normaliseUnifier u=«#{u}», u'=#{u'}|] u'
   where
-    u = joinUnifiersImpl l_ r_
-    joinUnifiersImpl :: Unifier -> Unifier -> Unifier
-    joinUnifiersImpl l r =
+    u' = normaliseUnifierImpl u
+    normaliseUnifierImpl :: Unifier -> Unifier
+    normaliseUnifierImpl = Map.filterWithKey aux
+      where
+        aux :: String -> Type -> Bool
+        aux k (TCVar x) = k /= x
+        aux _ _         = True
+
+joinUnifiers :: Unifier -> Unifier -> TC Unifier
+joinUnifiers l_ r_ = do
+  u <- joinUnifiersImpl l_ r_
+  trace [i|@joinUnifiers:\n l=#{l_}\n r=#{r_}\n u=#{u}|] $ return $ normaliseUnifier u
+  where
+    joinUnifiersImpl :: Unifier -> Unifier -> TC Unifier
+    joinUnifiersImpl l r = do
+      let commonKeys = Map.keys $ Map.intersection l r
+      invalidEntires <- filterM ((return . not) <=< uncurry (<:)) [(l Map.! k, r Map.! k) | k <- commonKeys]
+      unless (null invalidEntires) $ uThrow [i|Cannot join unifiers l=#{l}, r=#{r}|]
       let l' = Map.map (applyTTUnifier r) l
-          r' = Map.difference r l
-      in Map.union l' r'
+      let r' = Map.difference r l
+      return $ Map.union l' r'
 
 
 ttUnify :: Type -> Type -> TC Unifier
 ttUnify t_ t'_ = do
   u <- ttUnifyImpl t_ t'_
-  trace [i|@ttUnify t=«#{t_}», t'=«#{t'_}», u=#{u}|] $ return u
+  trace [i|@ttUnify t=«#{t_}», t'=«#{t'_}», u=#{u}|] $ return $ normaliseUnifier u
   where
     ttUnifyImpl :: Type -> Type -> TC Unifier
     ttUnifyImpl (TCVar x) t = return $ singleton x t
@@ -61,7 +77,7 @@ ttUnify t_ t'_ = do
       foldlM aux empty (zip ts ts')
       where
         aux :: Unifier -> (Type, Type) -> TC Unifier
-        aux u (ta, tb) = ttUnify ta tb <&> joinUnifiers u
+        aux u (ta, tb) = ttUnify ta tb >>= joinUnifiers u
     ttUnifyImpl l r = uThrow [i|Cannot unify types l=«#{l}», r=«#{r}».|]
 
 

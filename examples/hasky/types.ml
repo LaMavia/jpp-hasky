@@ -4,7 +4,11 @@ type Tree (a)
 ;;
 
 x :: Tree(Int) 
-  = Tree.Node(Tree.Leaf(), 1, Tree.Leaf())
+  = Tree.Node(
+      Tree.Node(Tree.Leaf(), 1, Tree.Leaf()), 
+      3, 
+      Tree.Leaf()
+    )
 ;;
 
 (**)
