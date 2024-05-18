@@ -52,41 +52,43 @@ definableStdlib =
             | _               -> Maybe.Nothing()
           )
         ;;
-
-      tail :: (a) => Fun(List(a), Maybe(List(a)))
-        = fun (xs List(a)) ->
-          match xs with (
-            | List.Cons(_, t) -> Maybe.Just(t)
-            | _               -> Maybe.Nothing()
-          )
-        ;;
-
-      empty :: (a) => Fun(List(a), Bool)
-        = fun (xs List(a)) ->
-          match xs with (
-            | List.Nil() -> Bool.True
-            | _          -> Bool.False
-          )
-        ;;
-
-      map :: (a, b) => Fun(Fun(a, b), List(a), List(b))
-        = fun (f Fun(a, b), xs List(a)) ->
-          match xs with (
-            | List.Nil()       -> []
-            | List.Cons(h, t)  -> List.Cons(f(h), map(f, t))
-          )
-        ;;
-
-      foldr :: (a, b) => Fun(Fun(a, b, b), b, List(a), b)
-        = fun (f Fun(a, b, b), u0 b, xs List(a)) ->
-          match xs with (
-            | List.Nil() -> u0
-            | List.Cons(h, tl) ->
-              let u :: b = foldr(f, u0, tl)
-              in f(h, u)
-          )
-        ;;
     |]
+
+
+      -- tail :: (a) => Fun(List(a), Maybe(List(a)))
+      --   = fun (xs List(a)) ->
+      --     match xs with (
+      --       | List.Cons(_, t) -> Maybe.Just(t)
+      --       | _               -> Maybe.Nothing()
+      --     )
+      --   ;;
+      --
+      -- empty :: (a) => Fun(List(a), Bool)
+      --   = fun (xs List(a)) ->
+      --     match xs with (
+      --       | List.Nil() -> Bool.True
+      --       | _          -> Bool.False
+      --     )
+      --   ;;
+      --
+      -- map :: (a, b) => Fun(Fun(a, b), List(a), List(b))
+      --   = fun (f Fun(a, b), xs List(a)) ->
+      --     match xs with (
+      --       | List.Nil()       -> []
+      --       | List.Cons(h, t)  -> List.Cons(f(h), map(f, t))
+      --     )
+      --   ;;
+      --
+      -- foldr :: (a, b) => Fun(Fun(a, b, b), b, List(a), b)
+      --   = fun (f Fun(a, b, b), u0 b, xs List(a)) ->
+      --     match xs with (
+      --       | List.Nil() -> u0
+      --       | List.Cons(h, tl) ->
+      --         let u :: b = foldr(f, u0, tl)
+      --         in f(h, u)
+      --     )
+      --   ;;
+      --
 
 prependStdlib :: Program -> Program
 prependStdlib (Program pos stmts) = Program pos (definableStdlib <> stmts)

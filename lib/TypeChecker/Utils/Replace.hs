@@ -24,10 +24,10 @@ replace _ v@(TCVar {}) = return v
 replace s (TCBound vs t) =
   replace (s `Set.difference` Set.fromList vs) t
 
-replace s e@(TCApp t ts) = do
+replace s (TCApp t ts) = do
   ts' <- mapM (replace s) ts
   let r = TCApp t ts'
-  trace [i|@replace e=«#{e}», r=«#{r}»|] $ return r
+  return r
 
 replace _ TCAny = return TCAny
 replace s (TCData t args dataMap c) = do

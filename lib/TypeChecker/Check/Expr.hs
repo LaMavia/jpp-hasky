@@ -26,7 +26,8 @@ import           TypeChecker.Check.Pattern (typeCheckPattern)
 import           TypeChecker.Check.Type    (typeCheckType)
 import           TypeChecker.TC            (TCChecker,
                                             Type (TCAny, TCApp, TCBound, TCData, TCVar),
-                                            alloc, astOfType, getVar, incIota)
+                                            alloc, appendIota, astOfType,
+                                            getVar, incIota)
 import           TypeChecker.TCConsts      (pattern TccBool, pattern TccFn,
                                             pattern TccInt, pattern TccUnif,
                                             pattern TccVoid, tccAnyAst)
@@ -118,17 +119,20 @@ typeCheckExprImpl e@(Abs.EConstr pos _ _) = do
 
 typeCheckExprImpl e@(Abs.EApp pos ce@(Abs.EConstr _ (Abs.UIdent t) (Abs.UIdent c)) argExprs) = do
   (tArgExprs', argExprs') <- mapAndUnzipM typeCheckExpr argExprs
-  d <- trace [i|@checkExpr argExprs'=«#{map printTree argExprs'}  >======>  #{tArgExprs'}»|] $ getVar t
+  d <- getVar t
   case d of
     TCData _ args dataMap _
       |  c `Map.member` dataMap -> do
       incIota
+      args' <- mapM appendIota args
+      -- let args' = args
       let cArgs = dataMap Map.! c
-      -- cArgs' <- mapM rename cArgs
-      u <- ttUnify (TccUnif cArgs) (TccUnif tArgExprs')
+      cArgs' <- mapM rename cArgs
+      u <- ttUnify (TccUnif tArgExprs') (TccUnif cArgs')
       -- let cArgs' = applyTTUnifier u <$> cArgs
-      let args' = applyTTUnifier u . TCVar <$> args
-      trace [i|@checkExpr e=«#{printTree e}»,\n\tu=#{u},\n\targs'=«#{args'}»|] $ return (TCApp t args', Abs.EApp pos ce argExprs')
+      let args'' = applyTTUnifier u . TCVar <$> args'
+      let eType = TCApp t args''
+      trace [i|@checkExpr e=«#{printTree e}»,\n\tu=«#{u}»,\nt\teType=«#{eType}»|] $ return (eType, Abs.EApp pos ce argExprs')
     TCData _ _ dataMap _
       | c `Map.notMember` dataMap ->
       let csString = showSepList " | " [ [i|#{k}(#{tsString})|] :: String | (k, ts) <- Map.toList dataMap, let tsString = showSepList ", " ts  ]

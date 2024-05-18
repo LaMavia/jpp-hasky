@@ -16,6 +16,7 @@ import qualified Data.Map.Strict            as Map
 import qualified Data.Set                   as Set
 import           Data.String.Interpolate    (i)
 import           Debug.Trace                (trace)
+import           Print                      (printTree)
 import           TypeChecker.TC             (TC, TCEnv, Type (..), alloc,
                                              appendIota, getVar)
 import           TypeChecker.TCConsts       (pattern TccInt)
@@ -33,7 +34,7 @@ applyTTUnifier :: Unifier -> Type -> Type
 applyTTUnifier u (TCVar x) | x `Map.member` u = u Map.! x
 applyTTUnifier u (TCApp t ts) = TCApp t (applyTTUnifier u <$> ts)
 applyTTUnifier u (TCBound _ t) = applyTTUnifier u t
-applyTTUnifier _ t = trace [i|@applyTTUnifier Skipping #{t}|] t
+applyTTUnifier _ t = t
 
 allocTCUnifier :: Unifier -> TC TCEnv
 allocTCUnifier u =
@@ -56,10 +57,10 @@ tcUnifyExpr (Abs.EApp _ ce@(Abs.EConstr _ (Abs.UIdent tx) (Abs.UIdent cx)) tsx) 
   case d of
     TCData _ args constrMap _ -> do
       unless (cx `Map.member` constrMap) $ uThrow [i|«#{cx}» is not a constructor of «#{d}»|]
-      let argExprs  = constrMap Map.! cx
+      let cargs  = constrMap Map.! cx
       env' <- envSeq $ zipWith alloc args tsy
-      argExprs' <-  withEnv env' $ mapM (replace (Set.fromList args)) argExprs
-      us <- zipWithM tcUnifyExpr tsx argExprs'
+      cargs' <-  withEnv env' $ mapM (replace (Set.fromList args)) cargs
+      us <- zipWithM tcUnifyExpr tsx cargs'
       foldlM joinUnifiers Map.empty us
     _ -> uThrow [i|«#{ce}» is not a valid constructor|]
 
@@ -76,35 +77,37 @@ joinUnifiers a b = do
   return $ Map.unions [a', b', common']
 
 ttUnify :: Type -> Type -> TC Unifier
-ttUnify (TCVar x) t = trace [i|@ttUnify #{x} := «#{t}»|] $ return $ Map.singleton x t
+ttUnify t t' = do
+  u <- ttUnifyImpl t t'
+  trace [i|@ttUnify t:#{t}\n\tt':#{t'}\n\tu:#{u}|] $ return u
 
-ttUnify l@(TCApp tx tsx) r@(TCApp ty tsy) | tx == ty = trace [i|@ttUnify
-\tl=«#{l}»
-\tr=«#{r}»|] $ do
+ttUnifyImpl :: Type -> Type -> TC Unifier
+ttUnifyImpl (TCVar x) t = return $ Map.singleton x t
+
+ttUnifyImpl (TCApp tx tsx) (TCApp ty tsy) | tx == ty = do
   us <- zipWithM ttUnify tsx tsy
   foldlM joinUnifiers Map.empty us
 
-ttUnify (TCApp _ ts) TCAny = do
+ttUnifyImpl (TCApp _ ts) TCAny = do
   us <- zipWithM ttUnify ts (repeat TCAny)
   foldlM joinUnifiers Map.empty us
 
-ttUnify TCAny _ = return Map.empty
+ttUnifyImpl TCAny _ = return Map.empty
 
-ttUnify (TCBound vs t) t' = do
+ttUnifyImpl (TCBound vs t) t' = do
   u <- ttUnify t t'
   let missingVars = filter (`Map.notMember` u) vs
   let missingEntries = (, TCAny) <$> missingVars
   let uCompliment = Map.fromList missingEntries
   return $ Map.union u uCompliment
 
-ttUnify _ TCAny = return Map.empty
+ttUnifyImpl _ TCAny = return Map.empty
 
-ttUnify a@(TCData {}) b@(TCData {}) | a == b =
+ttUnifyImpl a@(TCData {}) b@(TCData {}) | a == b =
   return Map.empty
 
 
-ttUnify a b =
-  -- trace [i|@ttUnify fallthrough: a=«#{a}», b=«#{b}»|] $
+ttUnifyImpl a b =
   uThrow [i|Types «#{a}», and «#{b}» are not unifiable|]
 
 
@@ -113,7 +116,8 @@ rename t = do
   let fvs = tcFVOfType t
   fvs' <- mapM appendIota fvs
   let u = Map.fromList $ zip fvs $ TCVar <$> fvs'
-  return $ applyTTUnifier u t
+  let t' = applyTTUnifier u t
+  trace [i|@rename t=«#{t}», t'=«#{t'}»|] $ return t'
 
 
 infixr 6 <:

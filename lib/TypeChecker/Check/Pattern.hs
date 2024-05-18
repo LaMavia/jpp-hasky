@@ -2,7 +2,6 @@
 
 module TypeChecker.Check.Pattern where
 import qualified Abs
-import           Control.Monad.State     (MonadState (get))
 import           Data.String.Interpolate (i)
 import           Debug.Trace             (trace)
 import           Print                   (printTree)

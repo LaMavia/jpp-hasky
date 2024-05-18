@@ -3,7 +3,11 @@ type Tree (a)
   | Node (Tree(a), a, Tree(a))
 ;;
 
-x :: Tree (Int) = Tree.Leaf();;
+(* x :: Tree(Int)  *)
+(*   = Tree.Leaf() *)
+(* ;; *)
+
+(**)
 (* map_tree :: (a, b) => Fun(Fun(a, b), Tree(a), Tree(b)) *)
 (*   = fun (f Fun(a, b), tree Tree(a)) -> *)
 (*     match tree with ( *)
@@ -16,9 +20,9 @@ x :: Tree (Int) = Tree.Leaf();;
 (**)
 (* main :: Void = print(map_tree( *)
 (*   fun (x Int) -> x * 2, *)
-  (* Tree.Node( *)
-  (*     Tree.Node( Tree.Leaf(), 1, Tree.Leaf() )  *)
-  (*     2,                                        *)
-  (*     Tree.Node( Tree.Leaf(), 3, Tree.Leaf() ) *)
-  (*   ) *)
+(*   Tree.Node( *)
+(*       Tree.Node( Tree.Leaf(), 1, Tree.Leaf() ),  *)
+(*       Bool.True(),                                        *)
+(*       Tree.Node( Tree.Leaf(), 3, Tree.Leaf() ) *)
+(*     ) *)
 (* )) ;; *)
