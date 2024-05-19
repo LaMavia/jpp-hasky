@@ -1,5 +1,4 @@
-all: 
-	cabal clean
+all: clean 
 	cabal build hasky
 	find dist-newstyle -name hasky -type f -exec cp -n {} . \;
 

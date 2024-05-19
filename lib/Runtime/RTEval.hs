@@ -74,7 +74,7 @@ data RTVal
   | RTFunc !RTEnv ![String] !(RT RTVal)
 
 instance Show RTVal where
-  show (RTInt n) = [i|#{n} :: Int|]
+  show (RTInt n) = show n
   show (RTConstr t n args) = [i|#{t}.#{n}(#{argStrings})|]
     where argStrings = intercalate ", " $ show <$> args
   show (RTFunc _ args _) = [i|fun(#{argStrings})|]
