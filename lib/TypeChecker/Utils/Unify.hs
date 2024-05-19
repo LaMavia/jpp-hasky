@@ -16,6 +16,7 @@ import           Data.String.Interpolate    (i)
 import           Print                      (printTree)
 import           TypeChecker.TC             (TC, TCEnv, Type (..), alloc,
                                              appendIota, getVar)
+import           TypeChecker.TCConsts       (pattern TccInt)
 import           TypeChecker.Utils.FreeVars (tcFVOfType)
 
 type Unifier = Map.Map String Type
@@ -85,6 +86,11 @@ etUnify e_ t_ = do
   sniff [] $ return $ normaliseUnifier u
   where
     etUnifyImpl :: Abs.Expr -> Type -> TC Unifier
+    etUnifyImpl (Abs.ELit _ l) t =
+      case (l, t) of
+        (Abs.LInt {}, TccInt) -> return empty
+        (l', t') -> uThrow [i|Literal «#{printTree l'}» is not of type «#{t'}».|]
+    etUnifyImpl (Abs.EIgnore _) _ = return empty
     etUnifyImpl (Abs.EId _ (Abs.LIdent x)) t = return $ singleton x t
     etUnifyImpl (Abs.EApp _ (Abs.EConstr _ (Abs.UIdent t) (Abs.UIdent c)) argExprs) (TCApp t' ts') | t == t' = do
       d <- getVar t

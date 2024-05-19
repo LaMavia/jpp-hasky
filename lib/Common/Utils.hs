@@ -1,9 +1,8 @@
-{-# LANGUAGE CPP #-}
-
 module Common.Utils where
 import           Control.Monad.Reader (MonadReader (ask, local))
 import           Data.Foldable        (foldlM)
 import           Data.List            (intercalate, unfoldr, union)
+import           Debug.Trace
 
 envSeq :: (MonadReader r m) => [m r] -> m r
 envSeq actions = do
@@ -34,8 +33,4 @@ unions :: Eq a => [[a]] -> [a]
 unions = foldr union []
 
 sniff :: String -> a -> a
-#ifdef DEBUG
-sniff = trace
-#else
 sniff _ = id
-#endif
