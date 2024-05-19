@@ -10,7 +10,6 @@ import           Control.Monad                 (mapAndUnzipM, unless, when)
 import           Data.List                     (sort, union, (\\))
 import qualified Data.Map                      as Map
 import           Data.String.Interpolate       (i)
-import           Debug.Trace                   (trace, traceShow)
 import           Preprocessor.TypeDesugar      (typeDesugar)
 import           TypeChecker.Check.Constructor (typeCheckConstructor)
 import           TypeChecker.Check.Expr        (typeCheckExpr)

@@ -4,7 +4,8 @@
 module TypeChecker.TC where
 
 import qualified Abs
-import           Common                  (UError, envSeq, showSepList, uThrow)
+import           Common                  (UError, envSeq, showSepList, sniff,
+                                          uThrow)
 import           Control.Monad.Except    (ExceptT, runExceptT)
 import           Control.Monad.Identity  (Identity (runIdentity))
 import           Control.Monad.Reader    (MonadReader (ask, local),
@@ -15,7 +16,6 @@ import           Data.List               (intercalate)
 import qualified Data.Map.Strict         as Map
 import           Data.Maybe              (isJust)
 import           Data.String.Interpolate (i)
-import           Debug.Trace             (trace, traceShow)
 
 
 type Location = Integer
@@ -36,7 +36,7 @@ instance Eq Type where
   TCVar x == TCVar y                       = x == y
   TCApp tx tsx == TCApp ty tsy             = tx == ty && tsx == tsy
   TCData tx asx mx _ == TCData ty asy my _ = tx == ty && asx == asy && mx == my
-  a == b                                   = trace [i|Failed to compare #{a}, and #{b}|] (False :: Bool)
+  a == b                                   = sniff [i|Failed to compare #{a}, and #{b}|] (False :: Bool)
 
 instance Show Type where
   show (TCVar x) = x

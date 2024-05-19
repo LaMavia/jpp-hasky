@@ -50,6 +50,10 @@ extra-doc-files:    CHANGELOG.md
 -- Extra source files to be distributed with the package, such as examples, or a tutorial module.
 -- extra-source-files:
 
+flag debug
+  description: Enable debug logging
+  default:     True
+
 common warnings
     ghc-options: -Wall
 
@@ -63,6 +67,9 @@ executable hasky
                     , lib
     hs-source-dirs:   app
     default-language: Haskell2010
+    if flag(debug)
+      cpp-options:  -DDEBUG
+
 
 executable test
     import:           warnings
@@ -91,6 +98,7 @@ library lib
                     , Lex
                     , Par
                     , Runtime
+                    , Parser
                     , Preprocessor.Desugar
                     , Preprocessor.TypeDesugar
                     , Preprocessor.Stdlib
@@ -109,7 +117,6 @@ library lib
                     , TypeChecker.Utils.FreeVars
                     , TypeChecker.Utils.BoundVars
                     , TypeChecker.Utils.Unify
-                    , TypeChecker.Utils.Replace
                     , TypeChecker.Utils.Apply
                     , TypeChecker.TC 
                     , TypeChecker.TCConsts

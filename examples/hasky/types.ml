@@ -7,9 +7,15 @@ x :: Tree(Int)
   = Tree.Node(
       Tree.Node(Tree.Leaf(), 1, Tree.Leaf()), 
       3, 
-      Tree.Leaf()
+      Tree.Node(
+        Tree.Node(Tree.Leaf(), 1, Tree.Leaf()),
+        2,
+        Tree.Leaf()
+      )
     )
 ;;
+
+main :: Void = print(x) ;;
 
 (**)
 (* map_tree :: (a, b) => Fun(Fun(a, b), Tree(a), Tree(b)) *)

@@ -1,8 +1,9 @@
+{-# LANGUAGE CPP #-}
+
 module Common.Utils where
 import           Control.Monad.Reader (MonadReader (ask, local))
 import           Data.Foldable        (foldlM)
-import           Data.List            (group, intercalate, nub, sort, unfoldr,
-                                       union)
+import           Data.List            (intercalate, unfoldr, union)
 
 envSeq :: (MonadReader r m) => [m r] -> m r
 envSeq actions = do
@@ -31,3 +32,10 @@ showSepList sep xs = intercalate sep $ show <$> xs
 
 unions :: Eq a => [[a]] -> [a]
 unions = foldr union []
+
+sniff :: String -> a -> a
+#ifdef DEBUG
+sniff = trace
+#else
+sniff _ = id
+#endif

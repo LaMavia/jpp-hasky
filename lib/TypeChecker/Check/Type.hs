@@ -3,13 +3,11 @@
 module TypeChecker.Check.Type where
 
 import qualified Abs
-import           Common                  (envSeq, placeOfType, showSepList,
-                                          uCatch, uThrow, withEnv)
+import           Common                  (envSeq, placeOfType, uCatch, uThrow,
+                                          withEnv)
 import           Control.Monad           (mapAndUnzipM)
 import           Data.String.Interpolate (i)
-import           TypeChecker.TC          (TCChecker,
-                                          Type (TCAny, TCApp, TCData, TCVar),
-                                          alloc, getVar)
+import           TypeChecker.TC          (TCChecker, Type (..), alloc, getVar)
 import           TypeChecker.Utils       (stringOfLident)
 
 

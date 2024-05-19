@@ -6,34 +6,24 @@
 module TypeChecker.Check.Expr where
 import qualified Abs
 import           Common                    (envSeq, placeOfExpr, showSepList,
-                                            uCatch, uThrow, unions, withEnv)
-import           Control.Monad             (mapAndUnzipM, unless, when,
-                                            zipWithM)
+                                            sniff, uCatch, uThrow, withEnv)
+import           Control.Monad             (mapAndUnzipM, unless, when)
 import           Control.Monad.ListM       (allM, minimumByM)
 import           Data.Bifunctor            (Bifunctor (first))
-import           Data.Foldable             (foldlM)
-import           Data.Functor              (($>))
-import           Data.List                 (intercalate, (\\))
 import qualified Data.Map                  as Map
-import qualified Data.Set                  as Set
 import           Data.String.Interpolate   (i)
-import           Debug.Trace               (trace, traceShow, traceShowId)
-import           Preprocessor.Desugar      (desugarType)
 import           Preprocessor.TypeDesugar  (typeDesugar)
 import           Print                     (Print (prt), printTree, render)
 import           TypeChecker.Check.Arg     (typeCheckArg)
 import           TypeChecker.Check.Pattern (typeCheckPattern)
 import           TypeChecker.Check.Type    (typeCheckType)
-import           TypeChecker.TC            (TCChecker,
-                                            Type (TCAny, TCApp, TCBound, TCData, TCVar),
-                                            alloc, appendIota, astOfType,
-                                            getVar, incIota)
+import           TypeChecker.TC            (TCChecker, Type (..), alloc,
+                                            astOfType, getVar)
 import           TypeChecker.TCConsts      (pattern TccBool, pattern TccFn,
                                             pattern TccInt, pattern TccUnif,
-                                            pattern TccVoid, tccAnyAst)
-import           TypeChecker.Utils         (applyTTUnifier, joinUnifiers,
-                                            rename, replace, tcApply, tcCmpM,
-                                            tcFVOfType, ttUnify, (<:))
+                                            tccAnyAst)
+import           TypeChecker.Utils         (applyTTUnifier, tcApply, tcCmpM,
+                                            ttUnify, (<:))
 
 
 typeCheckExpr :: TCChecker Abs.Expr Type
@@ -46,7 +36,8 @@ typeCheckExprImpl (Abs.ELet pos xe@(Abs.EId _ (Abs.LIdent x)) t ve be) = do
   envExpected <- alloc x tExpected'
   (tActual, ve') <- withEnv envExpected $ typeCheckExpr ve
   let tActual' = typeDesugar tActual
-  when (tExpected' /= tActual') $ uThrow [i|Expected «#{x}» to be of type «#{tExpected'}», but got «#{tActual'}» instead.|]
+  areValidTypes <- tActual' <: tExpected'
+  unless areValidTypes $ uThrow [i|Expected «#{printTree x}» to be of type «#{tExpected'}», but got «#{tActual'}» instead.|]
   envActual <- alloc x tActual'
   (tBody, be') <- withEnv envActual $ typeCheckExpr be
   return (typeDesugar tBody, Abs.ELet pos xe t' ve' be')
@@ -60,8 +51,8 @@ typeCheckExprImpl (Abs.ELet pos xe@(Abs.EIgnore _) t ve be) = do
 typeCheckExprImpl (Abs.ELet pos xe t ve be) = do
   (tType, t') <- typeCheckType t
   (tActual, ve') <- first typeDesugar <$> typeCheckExpr ve
-  areTypesMatching <- tType <: tActual
-  unless areTypesMatching $ uThrow [i|Expected #{xe} to be of type «#{tType}», but got «#{tActual}» instead.|]
+  areTypesMatching <- tActual <: tType
+  unless areTypesMatching $ uThrow [i|Expected #{printTree xe} to be of type «#{tType}», but got «#{tActual}» instead.|]
   (env', xe') <- typeCheckPattern tActual xe
   (tBody, be') <- withEnv env' $ typeCheckExpr be
   return (typeDesugar tBody, Abs.ELet pos xe' t' ve' be')
@@ -123,17 +114,12 @@ typeCheckExprImpl e@(Abs.EApp pos ce@(Abs.EConstr _ (Abs.UIdent t) (Abs.UIdent c
   case d of
     TCData _ args dataMap _
       |  c `Map.member` dataMap -> do
-      -- incIota
-      -- args' <- mapM appendIota args
-      -- let args' = args
       let cArgs = dataMap Map.! c
-      -- cArgs' <- mapM rename cArgs
-      -- let cArgs' = cArgs
+      unless (length cArgs == length argExprs) $ uThrow [i|Cannot apply #{length argExprs} arguments to #{t}.#{c}/#{length cArgs}|]
       u <- ttUnify  (TccUnif cArgs) (TccUnif tArgExprs')
-      -- let cArgs' = applyTTUnifier u <$> cArgs
       let args'' = applyTTUnifier u . TCVar <$> args
       let eType = TCApp t args''
-      trace [i|@checkExpr e=«#{printTree e}»,\n\tu=«#{u}»,\nt\teType=«#{eType}»|] $ return (eType, Abs.EApp pos ce argExprs')
+      sniff [i|@checkExpr e=«#{printTree e}»,\n\tu=«#{u}»,\nt\teType=«#{eType}»|] $ return (eType, Abs.EApp pos ce argExprs')
     TCData _ _ dataMap _
       | c `Map.notMember` dataMap ->
       let csString = showSepList " | " [ [i|#{k}(#{tsString})|] :: String | (k, ts) <- Map.toList dataMap, let tsString = showSepList ", " ts  ]
@@ -151,10 +137,6 @@ typeCheckExprImpl (Abs.EApp pos ce argExprs) = do
   (argTypes', argExprs') <- mapAndUnzipM typeCheckExpr argExprs
   t <- tcApply tCe' argTypes'
   return (t, Abs.EApp pos ce' argExprs')
-
-typeCheckExprImpl e@(Abs.EMatch pos ve branches) = do
-  -- (tVe', ve') <- typeCheckExpr ve
-  return (TCAny, e)
 
 typeCheckExprImpl e@(Abs.EIgnore {}) = return (TCAny, e)
 typeCheckExprImpl e@(Abs.ELit _ l) =
