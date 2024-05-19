@@ -1,2 +1,1 @@
-(Maybe(@Any),EApp (Just (2,7)) (EConstr (Just (2,7)) (UIdent "Maybe") (UIdent "Just")) [EId (Just (2,18)) (LIdent "x")],fromList [("x",@Any)])
 

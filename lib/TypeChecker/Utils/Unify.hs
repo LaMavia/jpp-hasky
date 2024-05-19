@@ -73,6 +73,7 @@ ttUnify t_ t'_ = do
     ttUnifyImpl t (TCBound _ t') = ttUnifyImpl t t'
     ttUnifyImpl (TCApp t ts) (TCApp t' ts') | t == t' =
       foldlM aux empty (zip ts ts')
+    ttUnifyImpl a b | a == b = return empty
     ttUnifyImpl l r = uThrow [i|Cannot unify types l=«#{l}», r=«#{r}».|]
 
     aux :: Unifier -> (Type, Type) -> TC Unifier

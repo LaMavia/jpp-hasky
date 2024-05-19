@@ -1,29 +1,21 @@
-{-# LANGUAGE QuasiQuotes #-}
-
 module Main where
 
-import           Control.Monad           (MonadFail (fail), when)
-import           Prelude                 (Either (..), FilePath, IO, Int,
-                                          String, concat, fst, getContents,
-                                          mapM_, putStrLn, readFile, return,
-                                          show, snd, ($), (++), (.), (<$>), (>),
-                                          (>>), (>>=))
-import           System.Environment      (getArgs)
-import           System.Exit             (exitFailure)
+import           Control.Monad        (when)
+import           System.Environment   (getArgs)
+import           System.Exit          (exitFailure)
 
-import           Abs                     (Program)
-import           Data.String.Interpolate (i)
-import           Execution.Eval          (evalProgram)
-import           Lex                     (Token, mkPosToken)
-import           Par                     (myLexer, pProgram)
-import           Preprocessor.Desugar    (desugarProgram)
-import           Preprocessor.Stdlib     (prependStdlib)
-import           Print                   (printTree)
-import           Runtime                 (runRT)
-import           Skel                    ()
+import           Abs                  (Program)
+import           Execution.Eval       (evalProgram)
+import           Lex                  (Token, mkPosToken)
+import           Par                  (myLexer, pProgram)
+import           Preprocessor.Desugar (desugarProgram)
+import           Preprocessor.Stdlib  (prependStdlib)
+import           Print                (printTree)
+import           Runtime              (runRT)
+import           Skel                 ()
 import           System.Console.ANSI
-import           System.IO               (hPrint, hPutStrLn, stderr)
-import           TypeChecker             (runTC, typeCheckProgram)
+import           System.IO            (hPrint, hPutStrLn, stderr)
+import           TypeChecker          (runTC, typeCheckProgram)
 
 type Err        = Either String
 type ParseFun   = [Token] -> Err Program

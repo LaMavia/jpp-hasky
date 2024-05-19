@@ -138,7 +138,7 @@ typeCheckExprImpl (Abs.EApp pos ce argExprs) = do
   t <- tcApply tCe' argTypes'
   return (t, Abs.EApp pos ce' argExprs')
 
-typeCheckExprImpl e@(Abs.EIgnore {}) = return (TCAny, e)
+typeCheckExprImpl (Abs.EIgnore {}) = uThrow [i|Unexpected hole|]
 typeCheckExprImpl e@(Abs.ELit _ l) =
   case l of
     Abs.LInt {} -> return (TccInt ,e)

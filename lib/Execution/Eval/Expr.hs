@@ -5,14 +5,15 @@
 module Execution.Eval.Expr where
 
 import           Abs
+import           Common
 import           Control.Monad.Except    (MonadError (throwError))
 import           Control.Monad.Reader    (MonadReader (ask, local))
 import           Data.Foldable           (Foldable (foldl'))
 import           Data.String.Interpolate (i)
 import           Execution.Eval.Literal  (evalLiteral)
 import           Execution.Unification   (applyUnifier, unify)
+import           Print                   (printTree)
 import           Runtime
-import Common
 
 
 evalExpr :: Expr -> RT RTVal
@@ -151,3 +152,6 @@ evalExprImpl (ELambda _ fargs body) = do
     argNames = (\(Arg _ (LIdent x) _) -> x) <$> fargs
     f = evalExpr body
 
+evalExprImpl e@(ELetNT {}) = uThrow [i|Unexpected untyped let binding: #{printTree e}|]
+evalExprImpl e@(EList {}) = uThrow [i|Unexpected sugared list expression: #{printTree e}|]
+evalExprImpl (EIgnore {}) = uThrow [i|Unexpected hole|]

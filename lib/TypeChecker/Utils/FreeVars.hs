@@ -1,3 +1,4 @@
+-- used in doc tests
 {-# LANGUAGE OverloadedStrings #-}
 
 module TypeChecker.Utils.FreeVars where
@@ -5,10 +6,10 @@ module TypeChecker.Utils.FreeVars where
 import qualified Abs
 import           Common                      (unions)
 import           Data.List                   (singleton, (\\))
+-- used in doc tests
 import           Parser
 import           TypeChecker.TC              (Type (TCAny, TCApp, TCBound, TCData, TCVar))
-import           TypeChecker.Utils.BoundVars (bvOfTopDef, bvOfType,
-                                              stringOfLident)
+import           TypeChecker.Utils.BoundVars (bvOfType, stringOfLident)
 
 type FV a = a -> [String]
 
